@@ -1,0 +1,45 @@
+{
+  "description": "Test cases for well-known provider URL matching. Shared between TypeScript and Java test suites.",
+  "cases": [
+    {
+      "description": "well-known URL matches",
+      "url": "https://example.com/.well-known/skills/",
+      "shouldMatch": true
+    },
+    {
+      "description": "well-known URL with subdomain",
+      "url": "https://api.example.com/.well-known/skills/",
+      "shouldMatch": true
+    },
+    {
+      "description": "well-known URL with port",
+      "url": "https://example.com:8080/.well-known/skills/",
+      "shouldMatch": true
+    },
+    {
+      "description": "well-known URL without trailing slash",
+      "url": "https://example.com/.well-known/skills",
+      "shouldMatch": true
+    },
+    {
+      "description": "http well-known URL",
+      "url": "http://example.com/.well-known/skills/",
+      "shouldMatch": true
+    },
+    {
+      "description": "regular URL does not match",
+      "url": "https://example.com/skills/",
+      "shouldMatch": false
+    },
+    {
+      "description": "github URL does not match",
+      "url": "https://github.com/owner/repo",
+      "shouldMatch": false
+    },
+    {
+      "description": "local path does not match",
+      "url": "./local-skills",
+      "shouldMatch": false
+    }
+  ]
+}

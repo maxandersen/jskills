@@ -25,6 +25,7 @@ public class WellKnownProvider implements HostProvider {
 
     private static final Pattern HTTPS_URL = Pattern.compile("^https?://[^/].*");
     private static final String WELL_KNOWN_PATH = "/.well-known/skills/";
+    private static final String WELL_KNOWN_PATH_NO_SLASH = "/.well-known/skills";
 
     private final ObjectMapper mapper = new ObjectMapper();
 
@@ -32,10 +33,9 @@ public class WellKnownProvider implements HostProvider {
     public boolean matches(String source) {
         if (source == null) return false;
         String s = source.trim();
-        // Match any https URL that isn't already handled by GitHub/GitLab providers
+        // Match only URLs that contain the .well-known/skills/ path
         return HTTPS_URL.matcher(s).matches()
-            && !s.contains("github.com")
-            && !s.contains("gitlab.com");
+            && (s.contains(WELL_KNOWN_PATH) || s.endsWith(WELL_KNOWN_PATH_NO_SLASH));
     }
 
     @Override
