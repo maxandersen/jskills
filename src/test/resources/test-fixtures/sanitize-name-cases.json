@@ -1,0 +1,55 @@
+{
+  "description": "Test cases for name sanitization. Shared between TypeScript and Java test suites.",
+  "cases": [
+    {
+      "description": "simple unchanged",
+      "input": "my-skill",
+      "expected": "my-skill"
+    },
+    {
+      "description": "spaces to hyphens",
+      "input": "my skill",
+      "expected": "my-skill"
+    },
+    {
+      "description": "multiple spaces collapsed",
+      "input": "my  skill",
+      "expected": "my-skill"
+    },
+    {
+      "description": "leading/trailing trimmed",
+      "input": "  my-skill  ",
+      "expected": "my-skill"
+    },
+    {
+      "description": "slashes removed",
+      "input": "my/skill",
+      "expected": "myskill"
+    },
+    {
+      "description": "special chars removed",
+      "input": "my@skill!",
+      "expected": "myskill"
+    },
+    {
+      "description": "dots preserved",
+      "input": "my.skill",
+      "expected": "my.skill"
+    },
+    {
+      "description": "underscores preserved",
+      "input": "my_skill",
+      "expected": "my_skill"
+    },
+    {
+      "description": "lowercase conversion",
+      "input": "MySkill",
+      "expected": "myskill"
+    },
+    {
+      "description": "unicode handled",
+      "input": "my-skill-café",
+      "expected": "my-skill-café"
+    }
+  ]
+}

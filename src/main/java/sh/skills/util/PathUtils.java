@@ -17,31 +17,24 @@ public class PathUtils {
     public static String sanitizeName(String name) {
         if (name == null) return "";
 
-        // Remove null bytes
-        name = name.replace("\0", "");
+        // Trim leading/trailing whitespace
+        name = name.trim();
 
-        // Normalize path separators and remove traversal sequences
-        name = name.replace("\\", "/");
+        // Convert spaces to hyphens
+        name = name.replaceAll("\\s+", "-");
 
-        // Take only the last path component (prevent directory traversal)
-        int lastSlash = name.lastIndexOf('/');
-        if (lastSlash >= 0) {
-            name = name.substring(lastSlash + 1);
-        }
-
-        // Remove any remaining dots at start (hidden files / relative traversal)
-        while (name.startsWith(".")) {
-            name = name.substring(1);
-        }
-
-        // Allow only alphanumeric, hyphens, underscores, dots (not at start)
-        name = name.replaceAll("[^a-zA-Z0-9\\-_.]", "-");
+        // Remove slashes and other special characters
+        // Keep only alphanumeric (including unicode), hyphens, underscores, and dots
+        name = name.replaceAll("[^\\p{L}\\p{N}\\-_.]", "");
 
         // Collapse consecutive hyphens
         name = name.replaceAll("-{2,}", "-");
 
         // Remove trailing/leading hyphens
         name = name.replaceAll("^-+|-+$", "");
+
+        // Convert to lowercase
+        name = name.toLowerCase();
 
         return name;
     }
