@@ -1,0 +1,40 @@
+{
+  "description": "Test cases for skill path resolution. Shared between TypeScript and Java test suites.",
+  "cases": [
+    {
+      "description": "simple path unchanged",
+      "input": "skills/my-skill",
+      "expected": "skills/my-skill"
+    },
+    {
+      "description": "dot-slash prefix normalized",
+      "input": "./skills/my-skill",
+      "expected": "skills/my-skill"
+    },
+    {
+      "description": "double slashes normalized",
+      "input": "skills//my-skill",
+      "expected": "skills/my-skill"
+    },
+    {
+      "description": "trailing slash removed",
+      "input": "skills/my-skill/",
+      "expected": "skills/my-skill"
+    },
+    {
+      "description": "backslashes to forward slashes",
+      "input": "skills\\my-skill",
+      "expected": "skills/my-skill"
+    },
+    {
+      "description": "mixed slashes normalized",
+      "input": "skills\\\\my-skill//sub",
+      "expected": "skills/my-skill/sub"
+    },
+    {
+      "description": "parent directory references resolved",
+      "input": "skills/sub/../my-skill",
+      "expected": "skills/my-skill"
+    }
+  ]
+}

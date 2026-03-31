@@ -86,4 +86,44 @@ public class PathUtils {
     public static Path globalSkillLockPath() {
         return Paths.get(System.getProperty("user.home"), ".skill-lock.json");
     }
+
+    /**
+     * Normalizes a skill path:
+     * - Removes ./ prefix
+     * - Converts backslashes to forward slashes
+     * - Collapses multiple slashes
+     * - Removes trailing slashes
+     * - Resolves .. references
+     */
+    public static String normalizeSkillPath(String path) {
+        if (path == null || path.isEmpty()) {
+            return "";
+        }
+
+        // Convert backslashes to forward slashes
+        String normalized = path.replace('\\', '/');
+
+        // Remove ./ prefix
+        while (normalized.startsWith("./")) {
+            normalized = normalized.substring(2);
+        }
+
+        // Collapse multiple slashes
+        normalized = normalized.replaceAll("/+", "/");
+
+        // Remove trailing slash
+        if (normalized.endsWith("/") && normalized.length() > 1) {
+            normalized = normalized.substring(0, normalized.length() - 1);
+        }
+
+        // Resolve .. references using Path.normalize()
+        try {
+            java.nio.file.Path p = java.nio.file.Paths.get(normalized).normalize();
+            normalized = p.toString().replace('\\', '/');
+        } catch (Exception e) {
+            // If path normalization fails, return as-is
+        }
+
+        return normalized;
+    }
 }
