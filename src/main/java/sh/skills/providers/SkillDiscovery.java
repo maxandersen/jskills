@@ -49,13 +49,34 @@ public class SkillDiscovery {
      *
      * @param root      Base directory to search
      * @param skillName Optional skill name filter (null = find all)
+     * @param fullDepth If true, recursively search all subdirectories; if false, only search root and priority dirs
+     */
+    public List<Skill> discover(Path root, String skillName, boolean fullDepth) {
+        return discover(root, skillName, fullDepth, false);
+    }
+
+    /**
+     * Discover all skills in the given root directory.
+     *
+     * @param root      Base directory to search
+     * @param skillName Optional skill name filter (null = find all)
+     * @param fullDepth If true, recursively search all subdirectories; if false, only search root and priority dirs
      * @param includeInternal Include skills marked as internal
      */
-    public List<Skill> discover(Path root, String skillName, boolean includeInternal) {
+    public List<Skill> discover(Path root, String skillName, boolean fullDepth, boolean includeInternal) {
         List<Skill> skills = new ArrayList<>();
 
         // 1. Root SKILL.md
-        tryAddSkill(root.resolve(SKILL_FILE), skills, includeInternal);
+        boolean hasRootSkill = tryAddSkill(root.resolve(SKILL_FILE), skills, includeInternal);
+
+        // If fullDepth=false and we have a root skill, only return root skill
+        if (!fullDepth && hasRootSkill) {
+            // Apply name filter
+            if (skillName != null && !skillName.isEmpty()) {
+                skills.removeIf(s -> !matchesName(s.getName(), skillName));
+            }
+            return skills;
+        }
 
         // 2. Priority directories
         for (String dir : PRIORITY_DIRS) {
@@ -79,9 +100,13 @@ public class SkillDiscovery {
             }
         }
 
-        // 4. Recursive fallback if nothing found yet
-        if (skills.isEmpty()) {
-            discoverRecursive(root, root, 0, skills, includeInternal);
+        // 4. Recursive search
+        // - If fullDepth=true, always search recursively
+        // - If fullDepth=false but no root skill, still search recursively (fallback)
+        if (fullDepth || !hasRootSkill) {
+            if (skills.isEmpty() || fullDepth) {
+                discoverRecursive(root, root, 0, skills, includeInternal);
+            }
         }
 
         // Apply name filter
@@ -92,8 +117,8 @@ public class SkillDiscovery {
         return skills;
     }
 
-    private void tryAddSkill(Path skillFile, List<Skill> skills, boolean includeInternal) {
-        if (!Files.exists(skillFile)) return;
+    private boolean tryAddSkill(Path skillFile, List<Skill> skills, boolean includeInternal) {
+        if (!Files.exists(skillFile)) return false;
         try {
             String content = Files.readString(skillFile);
             Skill skill = FrontmatterParser.parse(content, skillFile);
@@ -102,9 +127,11 @@ public class SkillDiscovery {
                 boolean exists = skills.stream().anyMatch(s -> s.getName().equals(skill.getName()));
                 if (!exists) {
                     skills.add(skill);
+                    return true;
                 }
             }
         } catch (IOException ignored) {}
+        return false;
     }
 
     private void discoverFromManifest(Path root, Path manifestFile, List<Skill> skills, boolean includeInternal) {
