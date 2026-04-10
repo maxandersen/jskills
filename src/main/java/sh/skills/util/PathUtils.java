@@ -12,31 +12,25 @@ public class PathUtils {
 
     /**
      * Sanitize a skill name to prevent path traversal and injection.
-     * Strips dangerous characters and enforces kebab-case-like naming.
+     * Ports the TypeScript implementation from vercel-labs/skills/src/installer.ts
+     * with Unicode support enhancement.
+     *
+     * Replaces special characters with hyphens and strips leading/trailing dots and hyphens.
      */
     public static String sanitizeName(String name) {
-        if (name == null) return "";
+        if (name == null) return "unnamed-skill";
 
-        // Trim leading/trailing whitespace
-        name = name.trim();
+        String sanitized = name.toLowerCase()
+            // Replace any sequence of characters that are NOT lowercase letters,
+            // digits, dots, or underscores with a single hyphen.
+            // Using \p{Ll}\p{Nd} for Unicode support (enhancement over TypeScript)
+            .replaceAll("[^\\p{Ll}\\p{Nd}._]+", "-")
+            // Remove leading/trailing dots and hyphens
+            .replaceAll("^[.\\-]+|[.\\-]+$", "");
 
-        // Convert spaces to hyphens
-        name = name.replaceAll("\\s+", "-");
-
-        // Remove slashes and other special characters
-        // Keep only alphanumeric (including unicode), hyphens, underscores, and dots
-        name = name.replaceAll("[^\\p{L}\\p{N}\\-_.]", "");
-
-        // Collapse consecutive hyphens
-        name = name.replaceAll("-{2,}", "-");
-
-        // Remove trailing/leading hyphens
-        name = name.replaceAll("^-+|-+$", "");
-
-        // Convert to lowercase
-        name = name.toLowerCase();
-
-        return name;
+        // Limit to 255 chars (common filesystem limit), fallback to unnamed-skill if empty
+        sanitized = sanitized.substring(0, Math.min(sanitized.length(), 255));
+        return sanitized.isEmpty() ? "unnamed-skill" : sanitized;
     }
 
     /**

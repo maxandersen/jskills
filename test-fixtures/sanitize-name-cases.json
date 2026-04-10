@@ -22,14 +22,14 @@
       "expected": "my-skill"
     },
     {
-      "description": "slashes removed",
+      "description": "slashes replaced with hyphens",
       "input": "my/skill",
-      "expected": "myskill"
+      "expected": "my-skill"
     },
     {
-      "description": "special chars removed",
+      "description": "special chars replaced with hyphens",
       "input": "my@skill!",
-      "expected": "myskill"
+      "expected": "my-skill"
     },
     {
       "description": "dots preserved",

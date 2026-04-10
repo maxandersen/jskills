@@ -39,24 +39,24 @@
       "expectedOutput": "web-design"
     },
     {
-      "description": "strips path separator /",
+      "description": "replaces path separator / with hyphen",
       "input": "foo/bar",
-      "expectedOutput": "bar"
+      "expectedOutput": "foo-bar"
     },
     {
-      "description": "strips backslash on Windows",
+      "description": "replaces backslash with hyphen",
       "input": "foo\\bar",
-      "expectedOutput": "bar"
+      "expectedOutput": "foo-bar"
     },
     {
-      "description": "strips .. traversal",
+      "description": "replaces .. traversal with hyphen",
       "input": "../etc/passwd",
-      "expectedOutput": "passwd"
+      "expectedOutput": "etc-passwd"
     },
     {
-      "description": "strips null bytes",
+      "description": "replaces null bytes with hyphen",
       "input": "skill\u0000name",
-      "expectedOutput": "skillname"
+      "expectedOutput": "skill-name"
     },
     {
       "description": "strips leading dots (hidden files)",
