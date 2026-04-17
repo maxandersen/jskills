@@ -51,19 +51,10 @@ public class GitHubProvider implements HostProvider {
     public List<Skill> fetchSkills(String source, Path tempDir) throws ProviderException {
         ParsedGitHubSource parsed = parse(source);
 
-        // Resolve redirects and check repo metadata before cloning
+        // Resolve repo metadata before cloning to warn about large repos
         RepoInfo info = resolveRepo(parsed.owner, parsed.repo);
-        if (info != null) {
-            // Check for openclaw redirect
-            if (info.owner.equalsIgnoreCase("openclaw")) {
-                throw new ProviderException(
-                    "This repository redirects to openclaw/" + info.repo + ". "
-                    + "openclaw skills are blocked due to duplicate and malicious content.");
-            }
-            // Warn if repo is very large (>100MB)
-            if (info.sizeKB > 100_000) {
-                Console.warn("Repository is large (" + (info.sizeKB / 1024) + "MB). Clone may be slow.");
-            }
+        if (info != null && info.sizeKB > 100_000) {
+            Console.warn("Repository is large (" + (info.sizeKB / 1024) + "MB). Clone may be slow.");
         }
 
         String url = "https://github.com/" + parsed.owner + "/" + parsed.repo + ".git";
