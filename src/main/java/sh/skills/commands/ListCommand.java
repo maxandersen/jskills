@@ -64,6 +64,9 @@ public class ListCommand implements Callable<Integer> {
         String home = System.getProperty("user.home");
         String projectDir = System.getProperty("user.dir");
 
+        // Track which directories we've already scanned
+        Set<Path> scannedDirs = new HashSet<>();
+
         for (AgentConfig agent : agents) {
             Path skillsDir;
             if (global) {
@@ -73,6 +76,7 @@ public class ListCommand implements Callable<Integer> {
                 skillsDir = Paths.get(projectDir, agent.getSkillsDir());
             }
 
+            scannedDirs.add(skillsDir);
             if (!Files.isDirectory(skillsDir)) continue;
 
             List<Skill> skills = discoverInstalledSkills(skillsDir);
@@ -86,6 +90,35 @@ public class ListCommand implements Callable<Integer> {
                 skillList.add(entry);
             }
             result.put(agent.getName(), skillList);
+        }
+
+        // Also scan skill directories for agents NOT in the check list (upstream #656)
+        // In case skills were installed with --agent but the agent is no longer detected
+        if (agentFilter == null) {
+            for (AgentConfig agent : AgentRegistry.getAgents()) {
+                Path skillsDir;
+                if (global) {
+                    skillsDir = Paths.get(home, agent.getGlobalSkillsDir() != null
+                        ? agent.getGlobalSkillsDir() : agent.getSkillsDir());
+                } else {
+                    skillsDir = Paths.get(projectDir, agent.getSkillsDir());
+                }
+
+                if (scannedDirs.contains(skillsDir) || !Files.isDirectory(skillsDir)) continue;
+                scannedDirs.add(skillsDir);
+
+                List<Skill> skills = discoverInstalledSkills(skillsDir);
+                if (skills.isEmpty()) continue;
+
+                List<Map<String, String>> skillList = new ArrayList<>();
+                for (Skill skill : skills) {
+                    Map<String, String> entry = new LinkedHashMap<>();
+                    entry.put("name", skill.getName());
+                    entry.put("description", skill.getDescription());
+                    skillList.add(entry);
+                }
+                result.put(agent.getName(), skillList);
+            }
         }
 
         if (json) {

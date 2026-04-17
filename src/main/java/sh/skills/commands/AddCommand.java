@@ -4,6 +4,8 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 import sh.skills.agents.AgentRegistry;
+import sh.skills.blob.BlobDownloader;
+import sh.skills.blob.BlobDownloader.*;
 import sh.skills.lock.LocalLock;
 import sh.skills.lock.SkillLock;
 import sh.skills.model.AgentConfig;
@@ -11,8 +13,10 @@ import sh.skills.model.Skill;
 import sh.skills.model.SkillLockEntry;
 import sh.skills.providers.HostProvider;
 import sh.skills.providers.ProviderRegistry;
+import sh.skills.model.ParsedSource;
 import sh.skills.util.Console;
 import sh.skills.util.PathUtils;
+import sh.skills.util.SourceParser;
 import sh.skills.util.Telemetry;
 
 import java.io.IOException;
@@ -58,6 +62,9 @@ public class AddCommand implements Callable<Integer> {
     @Option(names = {"--dry-run"}, description = "Show what would be installed without making changes")
     private boolean dryRun;
 
+    @Option(names = {"--dangerously-accept-openclaw-risks"}, description = "Bypass openclaw source warning", hidden = true)
+    private boolean dangerouslyAcceptOpenclawRisks;
+
     @Override
     public Integer call() {
         try {
@@ -82,17 +89,77 @@ public class AddCommand implements Callable<Integer> {
             return 1;
         }
 
+        // Block openclaw sources unless explicitly opted in (upstream #865)
+        String normalizedSource = source.toLowerCase();
+        if (normalizedSource.contains("openclaw/") || normalizedSource.startsWith("openclaw/")) {
+            String sourceOwner = null;
+            // Extract owner from owner/repo, github.com/owner/repo, etc.
+            if (normalizedSource.contains("github.com/")) {
+                String[] parts = normalizedSource.split("github.com/");
+                if (parts.length > 1) sourceOwner = parts[1].split("/")[0];
+            } else if (!normalizedSource.contains("://") && !normalizedSource.startsWith("git@")) {
+                sourceOwner = normalizedSource.split("/")[0];
+            }
+            if ("openclaw".equals(sourceOwner) && !dangerouslyAcceptOpenclawRisks) {
+                Console.error("⚠️  openclaw skills are blocked due to a high number of duplicate and malicious skills.");
+                Console.log("If you understand the risks, re-run with " +
+                    Console.cyan("--dangerously-accept-openclaw-risks"));
+                return 1;
+            }
+        }
+
+        // Parse source for ref/blob support (upstream #814, #853)
+        ParsedSource parsedSource = null;
+        try {
+            parsedSource = SourceParser.parseSource(source);
+        } catch (Exception ignored) {}
+
+        // Preserve SSH URLs in lock files (upstream #588)
+        String lockSource = source;
+        if (parsedSource != null) {
+            String ownerRepo = SourceParser.getOwnerRepo(parsedSource);
+            boolean isSSH = parsedSource.getUrl() != null && parsedSource.getUrl().startsWith("git@");
+            if (ownerRepo != null && !isSSH) {
+                lockSource = ownerRepo;
+            }
+        }
+
         Console.step("Fetching skills from " + Console.cyan(source) + "...");
 
-        // Fetch skills into a temp directory
-        Path tempDir;
+        // Try blob-based fast install for GitHub sources (upstream #853)
+        BlobInstallResult blobResult = null;
+        if (parsedSource != null && "github".equals(parsedSource.getType())) {
+            String ownerRepo = SourceParser.getOwnerRepo(parsedSource);
+            if (ownerRepo != null) {
+                String token = System.getenv("GITHUB_TOKEN");
+                blobResult = BlobDownloader.tryBlobInstall(ownerRepo, new BlobInstallOptions(
+                    parsedSource.getSubpath(),
+                    parsedSource.getSkillFilter(),
+                    parsedSource.getRef(),
+                    token,
+                    !skillNames.isEmpty()
+                ));
+                if (blobResult == null) {
+                    Console.log(Console.dim("Blob download unavailable, falling back to clone..."));
+                }
+            }
+        }
+
+        // Fetch skills into a temp directory (fallback if blob failed)
+        Path tempDir = null;
         List<Skill> availableSkills;
-        try {
-            tempDir = Files.createTempDirectory("skills-add-");
-            availableSkills = provider.fetchSkills(source, tempDir);
-        } catch (HostProvider.ProviderException e) {
-            Console.error("Failed to fetch skills: " + e.getMessage());
-            return 1;
+        if (blobResult != null) {
+            availableSkills = blobResult.skills().stream()
+                .map(bs -> new Skill(bs.name(), bs.description(), bs.rawContent(), null, false))
+                .collect(Collectors.toList());
+        } else {
+            try {
+                tempDir = Files.createTempDirectory("skills-add-");
+                availableSkills = provider.fetchSkills(source, tempDir);
+            } catch (HostProvider.ProviderException e) {
+                Console.error("Failed to fetch skills: " + e.getMessage());
+                return 1;
+            }
         }
 
         if (availableSkills.isEmpty()) {
@@ -155,20 +222,43 @@ public class AddCommand implements Callable<Integer> {
             latestHash = provider.getLatestHash(source, null);
         } catch (Exception ignored) {}
 
+        String ref = parsedSource != null ? parsedSource.getRef() : null;
+
         for (Skill skill : skillsToInstall) {
             for (AgentConfig agent : targetAgents) {
                 try {
                     Path targetDir = resolveTargetDir(agent);
                     Path skillTargetDir = targetDir.resolve(PathUtils.sanitizeName(skill.getName()));
 
-                    installSkill(skill, skillTargetDir, tempDir);
+                    // Install skill — blob or disk-based
+                    BlobSkill blobSkill = findBlobSkill(blobResult, skill.getName());
+                    if (blobSkill != null) {
+                        installBlobSkill(blobSkill, skillTargetDir);
+                    } else {
+                        installSkill(skill, skillTargetDir, tempDir);
+                    }
+
+                    // Determine hash — prefer blob snapshot hash
+                    String skillHash = latestHash;
+                    String skillPath = skill.getFilePath() != null ? skill.getFilePath().toString() : null;
+                    if (blobSkill != null) {
+                        skillHash = blobSkill.snapshotHash();
+                        skillPath = blobSkill.repoPath();
+                        // Try to get folder hash from tree
+                        if (blobResult != null && skillPath != null) {
+                            String folderHash = BlobDownloader.getSkillFolderHashFromTree(
+                                blobResult.tree(), skillPath);
+                            if (folderHash != null) skillHash = folderHash;
+                        }
+                    }
 
                     // Update lock files
                     SkillLockEntry entry = new SkillLockEntry(
-                        source, provider.getSourceType(),
+                        lockSource, provider.getSourceType(),
                         provider.canonicalUrl(source),
-                        skill.getFilePath() != null ? skill.getFilePath().toString() : null,
-                        latestHash
+                        ref,
+                        skillPath,
+                        skillHash
                     );
                     if (global) {
                         globalLock.write(agent.getName(), skill.getName(), entry);
@@ -189,6 +279,31 @@ public class AddCommand implements Callable<Integer> {
         Console.log("\n" + Console.green("✓") + " Installed " + installed + " skill(s).");
         Telemetry.track("add", source);
         return 0;
+    }
+
+    /**
+     * Install a blob-downloaded skill by writing snapshot files to disk (upstream #853).
+     */
+    private void installBlobSkill(BlobSkill blobSkill, Path targetDir) throws IOException {
+        Files.createDirectories(targetDir);
+        for (SkillSnapshotFile file : blobSkill.files()) {
+            Path filePath = targetDir.resolve(file.path());
+            // Safety: ensure the file stays within targetDir
+            if (!PathUtils.isSubpathSafe(targetDir, filePath)) continue;
+            Files.createDirectories(filePath.getParent());
+            Files.writeString(filePath, file.contents());
+        }
+    }
+
+    /**
+     * Find a BlobSkill by name in the blob result.
+     */
+    private BlobSkill findBlobSkill(BlobInstallResult blobResult, String skillName) {
+        if (blobResult == null) return null;
+        return blobResult.skills().stream()
+            .filter(bs -> bs.name().equalsIgnoreCase(skillName))
+            .findFirst()
+            .orElse(null);
     }
 
     private void installSkill(Skill skill, Path targetDir, Path tempDir) throws IOException {
