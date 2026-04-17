@@ -14,6 +14,8 @@ import sh.skills.model.SkillLockEntry;
 import sh.skills.providers.HostProvider;
 import sh.skills.providers.ProviderRegistry;
 import sh.skills.model.ParsedSource;
+import sh.skills.tui.Prompts;
+import sh.skills.tui.Prompts.SelectOption;
 import sh.skills.util.Console;
 import sh.skills.util.PathUtils;
 import sh.skills.util.SourceParser;
@@ -127,6 +129,8 @@ public class AddCommand implements Callable<Integer> {
             }
         }
 
+        // Use spinner for fetching
+        Console.log("");
         Console.step("Fetching skills from " + Console.cyan(source) + "...");
 
         // Try blob-based fast install for GitHub sources (upstream #853)
@@ -203,6 +207,23 @@ public class AddCommand implements Callable<Integer> {
         if (targetAgents.isEmpty()) {
             Console.error("No agents selected for installation.");
             return 1;
+        }
+
+        // Prompt for scope if not explicitly set (matches upstream)
+        if (!global && !yes && !installAll && System.console() != null) {
+            boolean supportsGlobal = targetAgents.stream()
+                .anyMatch(a -> a.getGlobalSkillsDir() != null);
+            if (supportsGlobal) {
+                Boolean scope = Prompts.select("Installation scope", List.of(
+                    new SelectOption<>(false, "Project", "Install in current directory (committed with your project)"),
+                    new SelectOption<>(true, "Global", "Install in home directory (available across all projects)")
+                ));
+                if (scope == null) {
+                    Console.log("Installation cancelled.");
+                    return 0;
+                }
+                global = scope;
+            }
         }
 
         if (dryRun) {
@@ -381,52 +402,32 @@ public class AddCommand implements Callable<Integer> {
     }
 
     private List<Skill> promptSkillSelection(List<Skill> skills) {
-        Console.log("\nSelect skills to install (enter numbers separated by commas, or 'all'):");
-        for (int i = 0; i < skills.size(); i++) {
-            Console.log("  " + (i + 1) + ") " + Console.bold(skills.get(i).getName())
-                + " - " + skills.get(i).getDescription());
+        List<SelectOption<Skill>> options = new ArrayList<>();
+        for (Skill skill : skills) {
+            String hint = skill.getDescription();
+            if (hint != null && hint.length() > 60) hint = hint.substring(0, 57) + "...";
+            options.add(new SelectOption<>(skill, skill.getName(), hint));
         }
-        Console.print("Selection [all]: ");
-        Scanner scanner = new Scanner(System.in);
-        String input = scanner.hasNextLine() ? scanner.nextLine().trim() : "";
-        if (input.isEmpty() || input.equalsIgnoreCase("all")) {
-            return new ArrayList<>(skills);
-        }
-        if (input.equalsIgnoreCase("none") || input.equalsIgnoreCase("q")) {
-            return null;
-        }
-        List<Skill> selected = new ArrayList<>();
-        for (String part : input.split("[,\\s]+")) {
-            try {
-                int idx = Integer.parseInt(part.trim()) - 1;
-                if (idx >= 0 && idx < skills.size()) {
-                    selected.add(skills.get(idx));
-                }
-            } catch (NumberFormatException ignored) {}
-        }
-        return selected.isEmpty() ? new ArrayList<>(skills) : selected;
+
+        // Pre-select all
+        Set<Integer> preSelected = new HashSet<>();
+        for (int i = 0; i < options.size(); i++) preSelected.add(i);
+
+        List<Skill> selected = Prompts.multiselect("Select skills to install", options, preSelected);
+        return selected; // null if cancelled
     }
 
     private List<AgentConfig> promptAgentSelection(List<AgentConfig> agents) {
-        Console.log("\nSelect agents to install to (enter numbers separated by commas, or 'all'):");
-        for (int i = 0; i < agents.size(); i++) {
-            Console.log("  " + (i + 1) + ") " + agents.get(i).getDisplayName());
+        List<SelectOption<AgentConfig>> options = new ArrayList<>();
+        for (AgentConfig agent : agents) {
+            options.add(new SelectOption<>(agent, agent.getDisplayName()));
         }
-        Console.print("Selection [all]: ");
-        Scanner scanner = new Scanner(System.in);
-        String input = scanner.hasNextLine() ? scanner.nextLine().trim() : "";
-        if (input.isEmpty() || input.equalsIgnoreCase("all")) {
-            return new ArrayList<>(agents);
-        }
-        List<AgentConfig> selected = new ArrayList<>();
-        for (String part : input.split("[,\\s]+")) {
-            try {
-                int idx = Integer.parseInt(part.trim()) - 1;
-                if (idx >= 0 && idx < agents.size()) {
-                    selected.add(agents.get(idx));
-                }
-            } catch (NumberFormatException ignored) {}
-        }
-        return selected.isEmpty() ? new ArrayList<>(agents) : selected;
+
+        // Pre-select all
+        Set<Integer> preSelected = new HashSet<>();
+        for (int i = 0; i < options.size(); i++) preSelected.add(i);
+
+        List<AgentConfig> selected = Prompts.multiselect("Select agents to install to", options, preSelected);
+        return selected != null ? selected : List.of();
     }
 }
