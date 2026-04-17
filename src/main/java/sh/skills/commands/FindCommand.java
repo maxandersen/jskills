@@ -28,6 +28,24 @@ import java.util.concurrent.Callable;
 public class FindCommand implements Callable<Integer> {
 
     private static final String SKILLS_API = "https://skills.sh/api/search";
+    private static final String SKILLS_BASE = "https://skills.sh";
+
+    /**
+     * Format install count for display.
+     * Mirrors formatInstalls() from upstream find.ts.
+     */
+    public static String formatInstalls(int count) {
+        if (count <= 0) return "";
+        if (count >= 1_000_000) {
+            String val = String.format("%.1f", count / 1_000_000.0).replaceAll("\\.0$", "");
+            return val + "M installs";
+        }
+        if (count >= 1_000) {
+            String val = String.format("%.1f", count / 1_000.0).replaceAll("\\.0$", "");
+            return val + "K installs";
+        }
+        return count + (count == 1 ? " install" : " installs");
+    }
 
     @Parameters(arity = "0..*", description = "Search query")
     private List<String> queryWords = new ArrayList<>();
@@ -99,27 +117,34 @@ public class FindCommand implements Callable<Integer> {
         }
 
         if (!skills.isArray() || skills.size() == 0) {
-            Console.log("No skills found" + (query != null ? " for '" + query + "'" : "") + ".");
-            Console.log("Browse all skills at " + Console.cyan("https://skills.sh"));
+            Console.log(Console.dim("No skills found" + (query != null ? " for \"" + query + "\"" : "")) + ".");
             return 0;
         }
 
-        Console.log(Console.bold("Skills" + (query != null ? " matching '" + query + "'" : "")) + ":\n");
+        Console.log(Console.dim("Install with") + " skills add <owner/repo@skill>");
+        System.out.println();
 
+        // Show up to 6 results in non-interactive mode (matching upstream)
+        int shown = 0;
         for (JsonNode skill : skills) {
+            if (shown >= 6) break;
             String name = skill.path("name").asText("unknown");
-            String description = skill.path("description").asText("");
+            String slug = skill.path("id").asText(skill.path("slug").asText(""));
             String source = skill.path("source").asText("");
             int installs = skill.path("installs").asInt(0);
 
-            Console.log(Console.bold(name));
-            if (!description.isEmpty()) Console.log("  " + Console.dim(description));
-            if (!source.isEmpty()) Console.log("  " + Console.cyan(source));
-            if (installs > 0) Console.log("  " + Console.gray(installs + " installs"));
-            Console.log("");
+            // Format: source@skill-name <installs>
+            String pkg = !source.isEmpty() ? source : slug;
+            String installsStr = formatInstalls(installs);
+            Console.log(pkg + "@" + name
+                + (!installsStr.isEmpty() ? " " + Console.cyan(installsStr) : ""));
+            // URL line
+            if (!slug.isEmpty()) {
+                Console.log(Console.dim("\u2514 " + SKILLS_BASE + "/" + slug));
+            }
+            System.out.println();
+            shown++;
         }
-
-        Console.log("To install a skill: " + Console.cyan("skills add <source>"));
         return 0;
     }
 }
