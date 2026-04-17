@@ -144,7 +144,8 @@ public class ListCommand implements Callable<Integer> {
             return 0;
         }
 
-        // Group by skill (upstream format): deduplicate across agents
+        // Group by skill name (upstream format): deduplicate across agents
+        // Skills with the same name are merged into one entry with all agents listed
         Map<String, SkillInfo> bySkill = new LinkedHashMap<>();
         for (Map.Entry<String, List<Map<String, String>>> entry : result.entrySet()) {
             String agentName = entry.getKey();
@@ -155,10 +156,11 @@ public class ListCommand implements Callable<Integer> {
                 String name = skill.get("name");
                 String desc = skill.get("description");
                 String path = skill.get("path");
-                String key = name + "|" + path;
-                SkillInfo info = bySkill.computeIfAbsent(key,
+                SkillInfo info = bySkill.computeIfAbsent(name,
                     k -> new SkillInfo(name, desc, path));
-                info.agents.add(displayName);
+                if (!info.agents.contains(displayName)) {
+                    info.agents.add(displayName);
+                }
             }
         }
 

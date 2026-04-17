@@ -65,19 +65,31 @@ class ListCommandTest {
     }
 
     @Test
-    @DisplayName("should deduplicate skills shared across agents")
+    @DisplayName("should deduplicate same skill across agents into one entry")
     void deduplicatesSkills(@TempDir Path tempDir) {
         // Same skill in both .claude and .pi
         createSkill(tempDir.resolve(".claude/skills/shared-skill"), "shared-skill", "Shared");
         createSkill(tempDir.resolve(".pi/skills/shared-skill"), "shared-skill", "Shared");
 
         String output = runList(tempDir);
-        // Skill name should appear only once as a header, agents listed together
-        long count = output.lines()
+        // Should appear once with both agents listed
+        long nameLines = output.lines()
             .filter(l -> l.contains("shared-skill") && !l.contains("Agents:"))
             .count();
-        // Should have one entry line per unique path, not duplicated per agent
-        assertThat(count).as("skill name should not be duplicated per-agent").isLessThanOrEqualTo(2);
+        assertThat(nameLines).as("skill should appear only once (deduped by name)").isEqualTo(1);
+        // Agents line should list both
+        assertThat(output).contains("Claude Code");
+        assertThat(output).contains("Pi");
+    }
+
+    @Test
+    @DisplayName("should find skills in OpenClaw's 'skills/' directory")
+    void findsSkillsInOpenClawDir(@TempDir Path tempDir) {
+        // OpenClaw uses bare 'skills/' not '.openclaw/skills/'
+        createSkill(tempDir.resolve("skills/my-openclaw-skill"), "my-openclaw-skill", "An openclaw skill");
+
+        String output = runList(tempDir);
+        assertThat(output).contains("my-openclaw-skill");
     }
 
     private void createSkill(Path dir, String name, String description) {

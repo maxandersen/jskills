@@ -103,9 +103,9 @@ public class AgentRegistry {
         new AgentConfig("neovate", "Neovate",
             ".neovate/skills", ".neovate/skills", ".neovate"),
 
-        // OpenClaw
+        // OpenClaw (uses bare 'skills/' not '.openclaw/skills/' for project-level)
         new AgentConfig("openclaw", "OpenClaw",
-            ".openclaw/skills", ".openclaw/skills", ".openclaw"),
+            "skills", ".openclaw/skills", ".openclaw"),
 
         // OpenHands
         new AgentConfig("openhands", "OpenHands",
