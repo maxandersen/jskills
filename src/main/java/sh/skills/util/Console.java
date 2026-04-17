@@ -73,4 +73,10 @@ public class Console {
     public static void print(String msg) {
         System.out.print(msg);
     }
+
+    /** Print inline (overwriting current line, for progress) */
+    public static void printInline(String msg) {
+        System.out.print(msg);
+        System.out.flush();
+    }
 }
