@@ -28,7 +28,7 @@ class BannerTest {
             System.setOut(oldOut);
         }
         String output = out.toString();
-        assertThat(output).as("should contain SKILLS logo block chars")
-            .contains("███████╗██╗");
+        assertThat(output).as("should contain banner tagline")
+            .contains("The open agent skills ecosystem");
     }
 }

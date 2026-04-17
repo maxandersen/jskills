@@ -100,12 +100,16 @@ public class LocalLock {
             try (Stream<Path> paths = Files.walk(skillDir)) {
                 paths
                     .filter(Files::isRegularFile)
-                    .filter(p -> !p.toString().contains("/.git/") && !p.toString().contains("/node_modules/"))
+                    .filter(p -> {
+                        String s = p.toString().replace('\\', '/');
+                        return !s.contains("/.git/") && !s.contains("/node_modules/");
+                    })
                     .sorted() // Ensure consistent ordering
                     .forEach(path -> {
                         try {
                             // Hash the relative path
-                            String relativePath = skillDir.relativize(path).toString();
+                            // Normalize separators for consistent cross-platform hashes
+                            String relativePath = skillDir.relativize(path).toString().replace('\\', '/');
                             digest.update(relativePath.getBytes());
                             // Hash the file content
                             digest.update(Files.readAllBytes(path));
