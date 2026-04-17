@@ -178,17 +178,21 @@ public class InteractiveFind extends InlineApp {
         Thread.startVirtualThread(() -> {
             try {
                 List<SkillResult> searchResults = searchApi(query);
-                runner().runOnRenderThread(() -> {
-                    results.clear();
-                    results.addAll(searchResults);
-                    selectedIndex = 0;
-                    loading = false;
-                });
+                if (runner() != null) {
+                    runner().runOnRenderThread(() -> {
+                        results.clear();
+                        results.addAll(searchResults);
+                        selectedIndex = 0;
+                        loading = false;
+                    });
+                }
             } catch (Exception e) {
-                runner().runOnRenderThread(() -> {
-                    results.clear();
-                    loading = false;
-                });
+                if (runner() != null) {
+                    runner().runOnRenderThread(() -> {
+                        results.clear();
+                        loading = false;
+                    });
+                }
             }
         });
     }
