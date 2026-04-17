@@ -159,9 +159,25 @@ public class AgentRegistry {
         new AgentConfig("amp", "Amp",
             ".amp/skills", ".amp/skills", ".amp"),
 
+        // Antigravity (updated path, upstream #667)
+        new AgentConfig("antigravity", "Antigravity",
+            ".agents/skills", ".gemini/antigravity/skills", ".gemini/antigravity"),
+
         // Augment
         new AgentConfig("augment", "Augment",
             ".augment/skills", ".augment/skills", ".augment"),
+
+        // IBM Bob (upstream #335)
+        new AgentConfig("bob", "IBM Bob",
+            ".bob/skills", ".bob/skills", ".bob"),
+
+        // Deep Agents (upstream #478)
+        new AgentConfig("deepagents", "Deep Agents",
+            ".agents/skills", ".deepagents/agent/skills", ".deepagents"),
+
+        // Firebender (upstream #372)
+        new AgentConfig("firebender", "Firebender",
+            ".agents/skills", ".firebender/skills", ".firebender"),
 
         // Junie
         new AgentConfig("junie", "Junie",

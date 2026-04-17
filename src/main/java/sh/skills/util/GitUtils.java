@@ -43,6 +43,8 @@ public class GitUtils {
         }
 
         try {
+            // Note: JGit (pure Java) does not invoke git-lfs, so LFS smudge
+            // is inherently skipped (upstream #952 is a no-op for JGit).
             CloneCommand cmd = Git.cloneRepository()
                     .setURI(url)
                     .setDirectory(tempDir.toFile())

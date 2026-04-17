@@ -75,10 +75,27 @@ public class PathUtils {
     }
 
     /**
-     * Returns the global skill lock file path (~/.skill-lock.json).
+     * Returns the XDG state home directory.
+     */
+    public static Path xdgStateHome() {
+        String xdgStateHome = System.getenv("XDG_STATE_HOME");
+        if (xdgStateHome != null && !xdgStateHome.isEmpty()) {
+            return Paths.get(xdgStateHome);
+        }
+        return Paths.get(System.getProperty("user.home"), ".local", "state");
+    }
+
+    /**
+     * Returns the global skill lock file path.
+     * Respects XDG_STATE_HOME if set (upstream #517),
+     * otherwise defaults to ~/.agents/skills-lock.json.
      */
     public static Path globalSkillLockPath() {
-        return Paths.get(System.getProperty("user.home"), ".skill-lock.json");
+        String xdgStateHome = System.getenv("XDG_STATE_HOME");
+        if (xdgStateHome != null && !xdgStateHome.isEmpty()) {
+            return Paths.get(xdgStateHome, "skills", "skills-lock.json");
+        }
+        return Paths.get(System.getProperty("user.home"), ".agents", "skills-lock.json");
     }
 
     /**

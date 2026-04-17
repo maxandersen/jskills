@@ -89,6 +89,14 @@ public class FindCommand implements Callable<Integer> {
 
         JsonNode skills = root.isArray() ? root : root.path("skills");
 
+        // Sort by install count descending (upstream #546)
+        if (skills.isArray() && skills.size() > 1) {
+            List<JsonNode> sorted = new ArrayList<>();
+            skills.forEach(sorted::add);
+            sorted.sort((a, b) -> b.path("installs").asInt(0) - a.path("installs").asInt(0));
+            skills = mapper.valueToTree(sorted);
+        }
+
         if (!skills.isArray() || skills.size() == 0) {
             Console.log("No skills found" + (query != null ? " for '" + query + "'" : "") + ".");
             Console.log("Browse all skills at " + Console.cyan("https://skills.sh"));
