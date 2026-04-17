@@ -279,8 +279,10 @@ public class ListCommand implements Callable<Integer> {
     /** Shorten path for display: replace home with ~, cwd with . */
     private String shortenPath(String fullPath) {
         if (fullPath == null) return "";
-        String home = System.getProperty("user.home");
-        String cwd = System.getProperty("user.dir");
+        // Normalize separators for consistent output across platforms
+        fullPath = fullPath.replace('\\', '/');
+        String home = System.getProperty("user.home").replace('\\', '/');
+        String cwd = System.getProperty("user.dir").replace('\\', '/');
         if (fullPath.startsWith(cwd)) {
             return "." + fullPath.substring(cwd.length());
         }
