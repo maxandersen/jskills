@@ -128,12 +128,15 @@ public class InteractiveFind extends InlineApp {
                         nameEl = nameEl.bold();
                         arrowEl = arrowEl.bold();
                     }
+                    // Show loading indicator on first result while fetching
+                    String loadingDots = (loading && i == 0) ? " ..." : "";
                     rows.add(row(
                         arrowEl.fit(),
                         nameEl.fit(),
                         text(" ").fit(),
                         text(skill.source).fg(DIM_COLOR).fit(),
-                        text(installs.isEmpty() ? "" : " " + installs).fg(CYAN).fit()
+                        text(installs.isEmpty() ? "" : " " + installs).fg(CYAN).fit(),
+                        text(loadingDots).fg(DIM_COLOR).fit()
                     ).flex(Flex.START));
                 } else {
                     rows.add(text(""));
@@ -221,7 +224,7 @@ public class InteractiveFind extends InlineApp {
     }
 
     private EventResult handleKey(KeyEvent event) {
-        if (event.code() == KeyCode.ESCAPE) {
+        if (event.code() == KeyCode.ESCAPE || event.isCtrlC()) {
             cancelled = true;
             quit();
             return EventResult.HANDLED;

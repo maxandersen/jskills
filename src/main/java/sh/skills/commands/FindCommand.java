@@ -78,6 +78,14 @@ public class FindCommand implements Callable<Integer> {
         if (query == null && System.console() != null && !json) {
             return executeInteractive();
         }
+
+        // Non-interactive with no query (running in agent) — show tip
+        if (query == null && !json) {
+            Console.log(Console.dim("Tip: if running in a coding agent, follow these steps:"));
+            Console.log(Console.dim("  1) skills find [query]"));
+            Console.log(Console.dim("  2) skills add <owner/repo@skill>"));
+            Console.log("");
+        }
         String url = SKILLS_API;
         if (query != null && !query.isEmpty()) {
             url += "?q=" + java.net.URLEncoder.encode(query, "UTF-8");
@@ -180,9 +188,20 @@ public class FindCommand implements Callable<Integer> {
             + " from " + Console.dim(pkg) + "...");
         Console.log("");
 
-        // Run add command
-        String addSource = selected.addSource();
+        // Run add command with --skill flag (matches upstream)
         picocli.CommandLine addCmd = new picocli.CommandLine(new AddCommand());
-        return addCmd.execute(addSource);
+        int result = addCmd.execute(pkg, "--skill", selected.name());
+
+        Console.log("");
+        if (!selected.slug().isEmpty()) {
+            Console.log(Console.dim("View the skill at")
+                + " https://skills.sh/" + selected.slug());
+        } else {
+            Console.log(Console.dim("Discover more skills at")
+                + " https://skills.sh");
+        }
+        Console.log("");
+
+        return result;
     }
 }
