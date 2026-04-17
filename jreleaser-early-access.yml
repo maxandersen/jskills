@@ -5,7 +5,7 @@ project:
     groupId: sh.skills
     artifactId: jskills
     mainClass: sh.skills.Skills
-    version: 17
+    version: 25
   versionPattern: CALVER
 
 release:
