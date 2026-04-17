@@ -22,6 +22,7 @@ import java.util.concurrent.Callable;
  */
 @Command(
     name = "find",
+    aliases = {"search", "f", "s"},
     description = "Search for skills in the skills ecosystem",
     mixinStandardHelpOptions = true
 )

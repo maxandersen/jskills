@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
  */
 @Command(
     name = "add",
+    aliases = {"install", "a", "i"},
     description = "Install skills from a source (GitHub, GitLab, local path)",
     mixinStandardHelpOptions = true
 )

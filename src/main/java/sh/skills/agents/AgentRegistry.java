@@ -14,182 +14,100 @@ import java.util.Optional;
  */
 public class AgentRegistry {
 
+    // All agents synced with upstream agents.ts (v1.5.1, commit bc21a37a12)
+    // Format: name, displayName, skillsDir (project), globalSkillsDir, detectPath
     private static final List<AgentConfig> AGENTS = Collections.unmodifiableList(Arrays.asList(
-        // Claude Code
         new AgentConfig("claude-code", "Claude Code",
             ".claude/skills", ".claude/skills", ".claude"),
-
-        // Cursor
         new AgentConfig("cursor", "Cursor",
-            ".cursor/skills", ".cursor/skills", ".cursor"),
-
-        // OpenCode
+            ".agents/skills", ".cursor/skills", ".cursor"),
         new AgentConfig("opencode", "OpenCode",
-            ".opencode/skills", ".opencode/skills", ".opencode"),
-
-        // Cline
+            ".agents/skills", ".opencode/skills", ".opencode"),
         new AgentConfig("cline", "Cline",
-            ".cline/skills", ".cline/skills", ".cline"),
-
-        // Codex (OpenAI)
+            ".agents/skills", ".agents/skills", ".cline"),
         new AgentConfig("codex", "Codex",
-            ".codex/skills", ".codex/skills", ".codex"),
-
-        // CodeBuddy
+            ".agents/skills", ".codex/skills", ".codex"),
         new AgentConfig("codebuddy", "CodeBuddy",
             ".codebuddy/skills", ".codebuddy/skills", ".codebuddy"),
-
-        // Command Code
-        new AgentConfig("commandcode", "Command Code",
+        new AgentConfig("command-code", "Command Code",
             ".commandcode/skills", ".commandcode/skills", ".commandcode"),
-
-        // Continue
         new AgentConfig("continue", "Continue",
             ".continue/skills", ".continue/skills", ".continue"),
-
-        // Cortex
-        new AgentConfig("cortex", "Cortex",
-            ".cortex/skills", ".cortex/skills", ".cortex"),
-
-        // Crush
+        new AgentConfig("cortex", "Cortex Code",
+            ".cortex/skills", ".snowflake/cortex/skills", ".cortex"),
         new AgentConfig("crush", "Crush",
-            ".crush/skills", ".crush/skills", ".crush"),
-
-        // Droid
+            ".crush/skills", ".config/crush/skills", ".crush"),
         new AgentConfig("droid", "Droid",
-            ".droid/skills", ".droid/skills", ".droid"),
-
-        // Gemini CLI
+            ".factory/skills", ".factory/skills", ".factory"),
         new AgentConfig("gemini-cli", "Gemini CLI",
-            ".gemini/skills", ".gemini/skills", ".gemini"),
-
-        // GitHub Copilot
+            ".agents/skills", ".gemini/skills", ".gemini"),
         new AgentConfig("github-copilot", "GitHub Copilot",
-            ".github/skills", ".github/skills", ".github/copilot-instructions.md"),
-
-        // Goose
+            ".agents/skills", ".copilot/skills", ".copilot"),
         new AgentConfig("goose", "Goose",
             ".goose/skills", ".goose/skills", ".goose"),
-
-        // iFlow CLI
         new AgentConfig("iflow-cli", "iFlow CLI",
             ".iflow/skills", ".iflow/skills", ".iflow"),
-
-        // Kimi CLI
-        new AgentConfig("kimi-cli", "Kimi CLI",
-            ".kimi/skills", ".kimi/skills", ".kimi"),
-
-        // Kiro CLI
+        new AgentConfig("kimi-cli", "Kimi Code CLI",
+            ".agents/skills", ".config/agents/skills", ".kimi"),
         new AgentConfig("kiro-cli", "Kiro CLI",
             ".kiro/skills", ".kiro/skills", ".kiro"),
-
-        // Kode
         new AgentConfig("kode", "Kode",
             ".kode/skills", ".kode/skills", ".kode"),
-
-        // MCPJam
         new AgentConfig("mcpjam", "MCPJam",
             ".mcpjam/skills", ".mcpjam/skills", ".mcpjam"),
-
-        // Mistral Vibe
         new AgentConfig("mistral-vibe", "Mistral Vibe",
-            ".mistral/skills", ".mistral/skills", ".mistral"),
-
-        // Mux
+            ".vibe/skills", ".vibe/skills", ".vibe"),
         new AgentConfig("mux", "Mux",
             ".mux/skills", ".mux/skills", ".mux"),
-
-        // Neovate
         new AgentConfig("neovate", "Neovate",
             ".neovate/skills", ".neovate/skills", ".neovate"),
-
-        // OpenClaw (uses bare 'skills/' not '.openclaw/skills/' for project-level)
         new AgentConfig("openclaw", "OpenClaw",
             "skills", ".openclaw/skills", ".openclaw"),
-
-        // OpenHands
         new AgentConfig("openhands", "OpenHands",
             ".openhands/skills", ".openhands/skills", ".openhands"),
-
-        // Pi
         new AgentConfig("pi", "Pi",
-            ".pi/skills", ".pi/skills", ".pi"),
-
-        // Qoder
+            ".pi/skills", ".pi/agent/skills", ".pi"),
         new AgentConfig("qoder", "Qoder",
             ".qoder/skills", ".qoder/skills", ".qoder"),
-
-        // Qwen Code
         new AgentConfig("qwen-code", "Qwen Code",
             ".qwen/skills", ".qwen/skills", ".qwen"),
-
-        // Replit
         new AgentConfig("replit", "Replit",
-            ".replit/skills", ".replit/skills", ".replit"),
-
-        // Roo Code
-        new AgentConfig("roo-code", "Roo Code",
+            ".agents/skills", ".replit/skills", ".replit"),
+        new AgentConfig("roo", "Roo Code",
             ".roo/skills", ".roo/skills", ".roo"),
-
-        // Trae
         new AgentConfig("trae", "Trae",
             ".trae/skills", ".trae/skills", ".trae"),
-
-        // Trae CN
         new AgentConfig("trae-cn", "Trae CN",
-            ".trae-cn/skills", ".trae-cn/skills", ".trae-cn"),
-
-        // Windsurf
+            ".trae/skills", ".trae-cn/skills", ".trae-cn"),
         new AgentConfig("windsurf", "Windsurf",
-            ".windsurf/skills", ".windsurf/skills", ".windsurf"),
-
-        // Zencoder
+            ".windsurf/skills", ".codeium/windsurf/skills", ".windsurf"),
         new AgentConfig("zencoder", "Zencoder",
             ".zencoder/skills", ".zencoder/skills", ".zencoder"),
-
-        // Pochi
         new AgentConfig("pochi", "Pochi",
             ".pochi/skills", ".pochi/skills", ".pochi"),
-
-        // AdaL
         new AgentConfig("adal", "AdaL",
             ".adal/skills", ".adal/skills", ".adal"),
-
-        // Amp
         new AgentConfig("amp", "Amp",
-            ".amp/skills", ".amp/skills", ".amp"),
-
-        // Antigravity (updated path, upstream #667)
+            ".agents/skills", ".amp/skills", ".amp"),
         new AgentConfig("antigravity", "Antigravity",
             ".agents/skills", ".gemini/antigravity/skills", ".gemini/antigravity"),
-
-        // Augment
         new AgentConfig("augment", "Augment",
             ".augment/skills", ".augment/skills", ".augment"),
-
-        // IBM Bob (upstream #335)
         new AgentConfig("bob", "IBM Bob",
             ".bob/skills", ".bob/skills", ".bob"),
-
-        // Deep Agents (upstream #478)
         new AgentConfig("deepagents", "Deep Agents",
             ".agents/skills", ".deepagents/agent/skills", ".deepagents"),
-
-        // Firebender (upstream #372)
         new AgentConfig("firebender", "Firebender",
             ".agents/skills", ".firebender/skills", ".firebender"),
-
-        // Junie
         new AgentConfig("junie", "Junie",
             ".junie/skills", ".junie/skills", ".junie"),
-
-        // Kilo
-        new AgentConfig("kilo", "Kilo",
-            ".kilo/skills", ".kilo/skills", ".kilo"),
-
-        // Warp
+        new AgentConfig("kilo", "Kilo Code",
+            ".kilocode/skills", ".kilocode/skills", ".kilocode"),
         new AgentConfig("warp", "Warp",
-            ".warp/skills", ".warp/skills", ".warp")
+            ".agents/skills", ".agents/skills", ".warp"),
+        // Universal agent — canonical .agents/skills dir
+        new AgentConfig("universal", "Universal",
+            ".agents/skills", ".agents/skills", ".agents")
     ));
 
     public static List<AgentConfig> getAgents() {

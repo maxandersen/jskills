@@ -22,7 +22,7 @@ import java.util.concurrent.Callable;
  */
 @Command(
     name = "remove",
-    aliases = {"rm"},
+    aliases = {"rm", "r"},
     description = "Remove installed skills",
     mixinStandardHelpOptions = true
 )

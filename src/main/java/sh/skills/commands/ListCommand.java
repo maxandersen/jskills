@@ -127,12 +127,6 @@ public class ListCommand implements Callable<Integer> {
             }
         }
 
-        if (json) {
-            ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
-            System.out.println(mapper.writeValueAsString(result));
-            return 0;
-        }
-
         if (result.isEmpty()) {
             String scopeLabel = global ? "global" : "project";
             Console.log(Console.dim("No " + scopeLabel + " skills found."));
@@ -162,6 +156,23 @@ public class ListCommand implements Callable<Integer> {
                     info.agents.add(displayName);
                 }
             }
+        }
+
+        // JSON output: flat array matching upstream schema
+        if (json) {
+            String scopeKey = global ? "global" : "project";
+            List<Map<String, Object>> jsonList = new ArrayList<>();
+            for (SkillInfo info : bySkill.values()) {
+                Map<String, Object> entry = new LinkedHashMap<>();
+                entry.put("name", info.name);
+                entry.put("path", info.path);
+                entry.put("scope", scopeKey);
+                entry.put("agents", info.agents);
+                jsonList.add(entry);
+            }
+            ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+            System.out.println(mapper.writeValueAsString(jsonList));
+            return 0;
         }
 
         String scopeLabel = global ? "Global" : "Project";

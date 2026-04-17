@@ -92,6 +92,42 @@ class ListCommandTest {
         assertThat(output).contains("my-openclaw-skill");
     }
 
+    @Test
+    @DisplayName("should find skills in canonical .agents/skills/ directory")
+    void findsSkillsInCanonicalDir(@TempDir Path tempDir) {
+        createSkill(tempDir.resolve(".agents/skills/canonical-skill"), "canonical-skill", "A canonical skill");
+
+        String output = runList(tempDir);
+        assertThat(output).contains("canonical-skill");
+    }
+
+    @Test
+    @DisplayName("--json should produce flat array with name, path, scope, agents")
+    void jsonOutputFormat(@TempDir Path tempDir) {
+        createSkill(tempDir.resolve(".claude/skills/my-skill"), "my-skill", "Test");
+
+        String origDir = System.getProperty("user.dir");
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        PrintStream oldOut = System.out;
+        System.setOut(new PrintStream(out));
+        System.setProperty("user.dir", tempDir.toString());
+        try {
+            new CommandLine(new ListCommand()).execute("--json");
+        } finally {
+            System.setOut(oldOut);
+            System.setProperty("user.dir", origDir);
+        }
+        String json = out.toString().trim();
+        // Should be a JSON array
+        assertThat(json).startsWith("[");
+        // Should contain scope field
+        assertThat(json).contains("\"scope\"");
+        // Should contain agents as array
+        assertThat(json).contains("\"agents\"");
+        // Should contain display name not agent key
+        assertThat(json).contains("Claude Code");
+    }
+
     private void createSkill(Path dir, String name, String description) {
         try {
             Files.createDirectories(dir);
