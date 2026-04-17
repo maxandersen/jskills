@@ -39,9 +39,10 @@ public class PathUtils {
      */
     public static boolean isSubpathSafe(Path basePath, Path subPath) {
         try {
+            // Both must use toRealPath to resolve symlinks consistently
+            // (e.g. macOS /var → /private/var)
             Path normalizedBase = basePath.toRealPath();
-            Path normalizedSub = subPath.normalize().toAbsolutePath();
-            // Use startsWith on normalized paths
+            Path normalizedSub = subPath.toRealPath();
             return normalizedSub.startsWith(normalizedBase);
         } catch (IOException e) {
             // If we can't resolve the real path, use normalize only
