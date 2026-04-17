@@ -5,8 +5,11 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import sh.skills.agents.AgentRegistry;
+import sh.skills.lock.LocalLock;
+import sh.skills.lock.SkillLock;
 import sh.skills.model.AgentConfig;
 import sh.skills.model.Skill;
+import sh.skills.model.SkillLockEntry;
 import sh.skills.providers.SkillDiscovery;
 import sh.skills.util.Console;
 import sh.skills.util.FrontmatterParser;
@@ -175,24 +178,102 @@ public class ListCommand implements Callable<Integer> {
             return 0;
         }
 
+        // Read lock entries for plugin grouping
+        Map<String, SkillLockEntry> lockEntries = new HashMap<>();
+        try {
+            if (global) {
+                lockEntries.putAll(new SkillLock().readAll());
+            } else {
+                lockEntries.putAll(new LocalLock(Paths.get(projectDir)).readAll());
+            }
+        } catch (Exception ignored) {}
+
+        // Resolve pluginName for each skill from lock entries
+        Map<String, String> skillPluginNames = new HashMap<>();
+        for (Map.Entry<String, SkillLockEntry> le : lockEntries.entrySet()) {
+            String key = le.getKey(); // format: "agent:skillName"
+            SkillLockEntry entry = le.getValue();
+            if (entry.getPluginName() != null) {
+                int colon = key.indexOf(':');
+                String skillName = colon >= 0 ? key.substring(colon + 1) : key;
+                skillPluginNames.put(skillName, entry.getPluginName());
+            }
+        }
+
+        // Group skills by plugin
+        Map<String, List<SkillInfo>> groupedSkills = new LinkedHashMap<>();
+        List<SkillInfo> ungroupedSkills = new ArrayList<>();
+        for (SkillInfo info : bySkill.values()) {
+            String plugin = skillPluginNames.get(info.name);
+            if (plugin != null) {
+                groupedSkills.computeIfAbsent(plugin, k -> new ArrayList<>()).add(info);
+            } else {
+                ungroupedSkills.add(info);
+            }
+        }
+
+        boolean hasGroups = !groupedSkills.isEmpty();
         String scopeLabel = global ? "Global" : "Project";
         Console.log(Console.bold(scopeLabel + " Skills"));
         Console.log("");
 
-        for (SkillInfo info : bySkill.values()) {
-            String shortPath = shortenPath(info.path);
-            Console.log(Console.cyan(info.name) + " " + Console.dim(shortPath));
-            if (info.description != null && !info.description.isEmpty()) {
-                Console.log("  " + Console.dim(info.description));
+        if (hasGroups) {
+            // Print groups sorted alphabetically
+            List<String> sortedGroups = new ArrayList<>(groupedSkills.keySet());
+            Collections.sort(sortedGroups);
+            for (String group : sortedGroups) {
+                Console.log(Console.bold(kebabToTitle(group)));
+                for (SkillInfo info : groupedSkills.get(group)) {
+                    printSkillInfo(info, true);
+                }
+                Console.log("");
             }
-            String agentList = info.agents.size() <= 5
-                ? String.join(", ", info.agents)
-                : String.join(", ", info.agents.subList(0, 5))
-                    + " +" + (info.agents.size() - 5) + " more";
-            Console.log("  " + Console.dim("Agents:") + " " + agentList);
+            // Ungrouped under "General"
+            if (!ungroupedSkills.isEmpty()) {
+                Console.log(Console.bold("General"));
+                for (SkillInfo info : ungroupedSkills) {
+                    printSkillInfo(info, true);
+                }
+                Console.log("");
+            }
+        } else {
+            // No groups, flat list
+            for (SkillInfo info : bySkill.values()) {
+                printSkillInfo(info, false);
+            }
+            Console.log("");
         }
-        Console.log("");
         return 0;
+    }
+
+    /** Print a single skill entry */
+    private void printSkillInfo(SkillInfo info, boolean indent) {
+        String prefix = indent ? "  " : "";
+        String shortPath = shortenPath(info.path);
+        Console.log(prefix + Console.cyan(info.name) + " " + Console.dim(shortPath));
+        if (info.description != null && !info.description.isEmpty()) {
+            Console.log(prefix + "  " + Console.dim(info.description));
+        }
+        String agentList = info.agents.size() <= 5
+            ? String.join(", ", info.agents)
+            : String.join(", ", info.agents.subList(0, 5))
+                + " +" + (info.agents.size() - 5) + " more";
+        Console.log(prefix + "  " + Console.dim("Agents:") + " " + agentList);
+    }
+
+    /** Convert kebab-case to Title Case: "my-awesome-plugin" → "My Awesome Plugin" */
+    static String kebabToTitle(String kebab) {
+        if (kebab == null || kebab.isEmpty()) return kebab;
+        String[] words = kebab.split("-");
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < words.length; i++) {
+            if (i > 0) sb.append(' ');
+            if (!words[i].isEmpty()) {
+                sb.append(Character.toUpperCase(words[i].charAt(0)));
+                sb.append(words[i].substring(1));
+            }
+        }
+        return sb.toString();
     }
 
     /** Shorten path for display: replace home with ~, cwd with . */

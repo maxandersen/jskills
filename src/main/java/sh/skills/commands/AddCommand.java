@@ -263,6 +263,9 @@ public class AddCommand implements Callable<Integer> {
                         skillPath,
                         skillHash
                     );
+                    if (skill.getPluginName() != null) {
+                        entry.setPluginName(skill.getPluginName());
+                    }
                     if (global) {
                         globalLock.write(agent.getName(), skill.getName(), entry);
                     } else {

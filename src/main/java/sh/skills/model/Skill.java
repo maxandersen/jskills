@@ -12,6 +12,7 @@ public class Skill {
     private final String content;
     private final Path filePath;
     private final boolean internal;
+    private String pluginName;
 
     public Skill(String name, String description, String content, Path filePath, boolean internal) {
         this.name = name;
@@ -26,6 +27,8 @@ public class Skill {
     public String getContent() { return content; }
     public Path getFilePath() { return filePath; }
     public boolean isInternal() { return internal; }
+    public String getPluginName() { return pluginName; }
+    public void setPluginName(String pluginName) { this.pluginName = pluginName; }
 
     @Override
     public String toString() {

@@ -19,6 +19,8 @@ public class SkillLockEntry {
     private String skillFolderHash;
     private String installedAt;
     private String updatedAt;
+    /** Name of the plugin this skill belongs to (if any) */
+    private String pluginName;
 
     public SkillLockEntry() {}
 
@@ -62,4 +64,7 @@ public class SkillLockEntry {
 
     public String getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(String updatedAt) { this.updatedAt = updatedAt; }
+
+    public String getPluginName() { return pluginName; }
+    public void setPluginName(String pluginName) { this.pluginName = pluginName; }
 }
