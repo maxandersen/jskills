@@ -1,7 +1,7 @@
 {
   "aliases": {
     "skills": {
-      "script-ref": "sh.skills:jskills:LATEST",
+      "script-ref": "https://github.com/maxandersen/skills-java/releases/download/early-access/jskills-0.0.0-SNAPSHOT.jar",
       "description": "The CLI for the open agent skills ecosystem (Java port of vercel-labs/skills)",
       "java": "25"
     }
