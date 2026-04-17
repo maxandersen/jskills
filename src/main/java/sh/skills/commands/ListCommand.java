@@ -87,6 +87,9 @@ public class ListCommand implements Callable<Integer> {
                 Map<String, String> entry = new LinkedHashMap<>();
                 entry.put("name", skill.getName());
                 entry.put("description", skill.getDescription());
+                entry.put("path", skill.getFilePath() != null
+                    ? skill.getFilePath().getParent().toString()
+                    : skillsDir.resolve(skill.getName()).toString());
                 skillList.add(entry);
             }
             result.put(agent.getName(), skillList);
@@ -115,6 +118,9 @@ public class ListCommand implements Callable<Integer> {
                     Map<String, String> entry = new LinkedHashMap<>();
                     entry.put("name", skill.getName());
                     entry.put("description", skill.getDescription());
+                    entry.put("path", skill.getFilePath() != null
+                        ? skill.getFilePath().getParent().toString()
+                        : skillsDir.resolve(skill.getName()).toString());
                     skillList.add(entry);
                 }
                 result.put(agent.getName(), skillList);
@@ -128,23 +134,79 @@ public class ListCommand implements Callable<Integer> {
         }
 
         if (result.isEmpty()) {
-            Console.log("No skills installed." + (global ? "" : " (project-level)"));
-            Console.log("Run " + Console.cyan("skills add <source>") + " to install skills.");
+            String scopeLabel = global ? "global" : "project";
+            Console.log(Console.dim("No " + scopeLabel + " skills found."));
+            if (global) {
+                Console.log(Console.dim("Try listing project skills without -g"));
+            } else {
+                Console.log(Console.dim("Try listing global skills with -g"));
+            }
             return 0;
         }
 
+        // Group by skill (upstream format): deduplicate across agents
+        Map<String, SkillInfo> bySkill = new LinkedHashMap<>();
         for (Map.Entry<String, List<Map<String, String>>> entry : result.entrySet()) {
             String agentName = entry.getKey();
             AgentConfig agent = AgentRegistry.findByName(agentName).orElse(null);
             String displayName = agent != null ? agent.getDisplayName() : agentName;
 
-            Console.log("\n" + Console.bold(displayName) + " (" + entry.getValue().size() + " skill(s)):");
             for (Map<String, String> skill : entry.getValue()) {
-                Console.log("  " + Console.green("•") + " " + Console.bold(skill.get("name"))
-                    + " - " + Console.dim(skill.get("description")));
+                String name = skill.get("name");
+                String desc = skill.get("description");
+                String path = skill.get("path");
+                String key = name + "|" + path;
+                SkillInfo info = bySkill.computeIfAbsent(key,
+                    k -> new SkillInfo(name, desc, path));
+                info.agents.add(displayName);
             }
         }
+
+        String scopeLabel = global ? "Global" : "Project";
+        Console.log(Console.bold(scopeLabel + " Skills"));
+        Console.log("");
+
+        for (SkillInfo info : bySkill.values()) {
+            String shortPath = shortenPath(info.path);
+            Console.log(Console.cyan(info.name) + " " + Console.dim(shortPath));
+            if (info.description != null && !info.description.isEmpty()) {
+                Console.log("  " + Console.dim(info.description));
+            }
+            String agentList = info.agents.size() <= 5
+                ? String.join(", ", info.agents)
+                : String.join(", ", info.agents.subList(0, 5))
+                    + " +" + (info.agents.size() - 5) + " more";
+            Console.log("  " + Console.dim("Agents:") + " " + agentList);
+        }
+        Console.log("");
         return 0;
+    }
+
+    /** Shorten path for display: replace home with ~, cwd with . */
+    private String shortenPath(String fullPath) {
+        if (fullPath == null) return "";
+        String home = System.getProperty("user.home");
+        String cwd = System.getProperty("user.dir");
+        if (fullPath.startsWith(cwd)) {
+            return "." + fullPath.substring(cwd.length());
+        }
+        if (fullPath.startsWith(home)) {
+            return "~" + fullPath.substring(home.length());
+        }
+        return fullPath;
+    }
+
+    private static class SkillInfo {
+        final String name;
+        final String description;
+        final String path;
+        final List<String> agents = new ArrayList<>();
+
+        SkillInfo(String name, String description, String path) {
+            this.name = name;
+            this.description = description;
+            this.path = path;
+        }
     }
 
     private List<Skill> discoverInstalledSkills(Path skillsDir) {
