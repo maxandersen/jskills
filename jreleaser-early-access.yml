@@ -6,7 +6,9 @@ project:
     artifactId: jskills
     mainClass: sh.skills.Skills
     version: 25
-  versionPattern: CALVER
+  snapshot:
+    enabled: true
+    label: early-access
 
 release:
   github:

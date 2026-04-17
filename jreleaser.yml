@@ -15,7 +15,7 @@ project:
     mainClass: sh.skills.Skills
     version: 25
   inceptionYear: "2025"
-  versionPattern: CALVER
+
 
 release:
   github:
