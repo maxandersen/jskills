@@ -1,0 +1,17 @@
+[
+  {
+    "name": "org.yaml.snakeyaml.Yaml",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true
+  },
+  {
+    "name": "org.eclipse.jgit.transport.http.JDKHttpConnectionFactory",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true
+  },
+  {
+    "name": "org.eclipse.jgit.internal.storage.file.FileRepository",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true
+  }
+]

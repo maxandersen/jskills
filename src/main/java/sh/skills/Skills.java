@@ -3,6 +3,7 @@
 
 package sh.skills;
 
+import io.quarkus.picocli.runtime.annotations.TopCommand;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -18,9 +19,10 @@ import java.util.concurrent.Callable;
  * Usage via JBang:
  *   jbang skills@maxandersen/jskills [command] [options]
  *
- * Or as a fat jar:
- *   java -jar jskills.jar [command] [options]
+ * Or as a native binary:
+ *   skills [command] [options]
  */
+@TopCommand
 @Command(
     name = "skills",
     description = "The CLI for the open agent skills ecosystem",
@@ -57,16 +59,6 @@ public class Skills implements Callable<Integer> {
 
     @Option(names = {"--version"}, versionHelp = true, description = "Print version information")
     private boolean versionRequested;
-
-    public static void main(String[] args) {
-        int exitCode = new CommandLine(new Skills())
-            .setExecutionExceptionHandler((ex, cmd, parseResult) -> {
-                Console.error(ex.getMessage());
-                return 1;
-            })
-            .execute(args);
-        System.exit(exitCode);
-    }
 
     @Override
     public Integer call() {
