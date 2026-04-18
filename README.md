@@ -8,7 +8,7 @@ Run it with zero Node.js/npm required, using just Java 25+ via [JBang](https://j
 
 ```bash
 # Install the 'skills' command (one-time)
-jbang app install skills@maxandersen/skills-java
+jbang app install skills@maxandersen/jskills
 
 # Now use 'skills' directly
 skills find web design
@@ -17,7 +17,7 @@ skills list
 ```
 
 > Don't have JBang? Install it from [jbang.dev/download](https://www.jbang.dev/download/).
-> Or run without installing: `jbang skills@maxandersen/skills-java <command>`
+> Or run without installing: `jbang skills@maxandersen/jskills <command>`
 
 ## Usage
 
@@ -126,8 +126,8 @@ The `upstream.lock` file records the last-synced commit SHA.
 ## Building from Source
 
 ```bash
-git clone https://github.com/maxandersen/skills-java
-cd skills-java
+git clone https://github.com/maxandersen/jskills
+cd jskills
 mvn package
 java -jar target/jskills-*.jar --help
 ```

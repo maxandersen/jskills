@@ -8,8 +8,8 @@ project:
     - Max Rydahl Andersen
   license: MIT
   links:
-    homepage: https://github.com/maxandersen/skills-java
-    documentation: https://github.com/maxandersen/skills-java#readme
+    homepage: https://github.com/maxandersen/jskills
+    documentation: https://github.com/maxandersen/jskills#readme
   languages:
     java:
       groupId: sh.skills
@@ -22,7 +22,7 @@ project:
 release:
   github:
     owner: maxandersen
-    name: skills-java
+    name: jskills
     overwrite: true
     tagName: "v{{projectVersion}}"
     releaseName: "v{{projectVersion}}"
