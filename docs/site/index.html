@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>jskills — The Agent Skills CLI for Java</title>
+  <meta name="description" content="Install, manage, and discover agent skills from the command line. A Java CLI for the open agent skills ecosystem.">
+  <meta property="og:title" content="jskills — The Agent Skills CLI for Java">
+  <meta property="og:description" content="Install, manage, and discover agent skills from the command line.">
+  <meta property="og:url" content="https://maxandersen.github.io/jskills/">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --fg: #e5e5e5;
+      --dim: #737373;
+      --accent: #22c55e;
+      --accent2: #16a34a;
+      --card-bg: #171717;
+      --card-border: #262626;
+      --input-bg: #1c1c1c;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code, pre {
+      font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+      font-size: 0.9em;
+    }
+    .container { max-width: 900px; margin: 0 auto; padding: 0 1.5rem; }
+
+    /* Hero */
+    .hero {
+      text-align: center;
+      padding: 4rem 0 3rem;
+    }
+    .logo {
+      font-family: monospace;
+      font-size: 0.55rem;
+      line-height: 1.15;
+      color: var(--accent);
+      white-space: pre;
+      display: inline-block;
+      margin-bottom: 1.5rem;
+      letter-spacing: -0.5px;
+    }
+    @media (min-width: 640px) { .logo { font-size: 0.75rem; } }
+    .hero h1 { font-size: 1.1rem; font-weight: 400; color: var(--dim); margin-bottom: 0.5rem; }
+    .hero p { color: var(--dim); font-size: 0.95rem; }
+
+    /* Install section */
+    .install {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin: 2rem 0 3rem;
+    }
+    .install-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 1.25rem 1.5rem;
+    }
+    .install-card h3 {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--dim);
+      margin-bottom: 0.75rem;
+    }
+    .install-card pre {
+      background: var(--bg);
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      overflow-x: auto;
+      color: var(--fg);
+      position: relative;
+    }
+    .install-card pre .prompt { color: var(--dim); user-select: none; }
+    .install-card pre .comment { color: var(--dim); }
+    .install-card .note { font-size: 0.8rem; color: var(--dim); margin-top: 0.5rem; }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--card-border);
+      margin-bottom: 1.5rem;
+    }
+    .tab {
+      padding: 0.5rem 1.25rem;
+      background: none;
+      border: none;
+      color: var(--dim);
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-family: inherit;
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    .tab:hover { color: var(--fg); }
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    /* Commands */
+    .commands {
+      margin: 0 0 3rem;
+    }
+    .commands h2 {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+    }
+    .cmd-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.5rem;
+    }
+    @media (min-width: 640px) { .cmd-grid { grid-template-columns: 1fr 1fr; } }
+    .cmd {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      padding: 1rem 1.25rem;
+    }
+    .cmd code {
+      color: var(--accent);
+      font-size: 0.85rem;
+    }
+    .cmd p {
+      color: var(--dim);
+      font-size: 0.85rem;
+      margin-top: 0.25rem;
+    }
+
+    /* Search / Find */
+    .find {
+      margin: 0 0 3rem;
+    }
+    .find h2 {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+    }
+    .search-box {
+      display: flex;
+      align-items: center;
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 0 1rem;
+      margin-bottom: 1rem;
+      transition: border-color 0.15s;
+    }
+    .search-box:focus-within { border-color: var(--accent); }
+    .search-icon { color: var(--dim); margin-right: 0.5rem; font-size: 1.1rem; }
+    .search-box input {
+      flex: 1;
+      background: none;
+      border: none;
+      outline: none;
+      color: var(--fg);
+      font-family: inherit;
+      font-size: 1rem;
+      padding: 0.75rem 0;
+    }
+    .search-box input::placeholder { color: #525252; }
+    .result-count {
+      font-size: 0.8rem;
+      color: var(--dim);
+      margin-bottom: 0.75rem;
+    }
+    .results {
+      display: flex;
+      flex-direction: column;
+      gap: 0.375rem;
+      max-height: 420px;
+      overflow-y: auto;
+    }
+    .results::-webkit-scrollbar { width: 6px; }
+    .results::-webkit-scrollbar-track { background: transparent; }
+    .results::-webkit-scrollbar-thumb { background: var(--card-border); border-radius: 3px; }
+    .skill-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      padding: 0.6rem 1rem;
+      transition: border-color 0.15s;
+    }
+    .skill-row:hover { border-color: #404040; }
+    .skill-name {
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    .skill-source {
+      font-size: 0.75rem;
+      color: var(--dim);
+    }
+    .skill-installs {
+      font-size: 0.75rem;
+      color: var(--dim);
+      white-space: nowrap;
+      margin-left: 1rem;
+    }
+    .loading {
+      text-align: center;
+      color: var(--dim);
+      padding: 2rem;
+      font-size: 0.9rem;
+    }
+    .loading .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--card-border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      vertical-align: middle;
+      margin-right: 0.5rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--card-border);
+      padding: 2rem 0;
+      text-align: center;
+      color: var(--dim);
+      font-size: 0.8rem;
+      margin-top: 2rem;
+    }
+    footer a { color: var(--dim); }
+    footer a:hover { color: var(--fg); }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <section class="hero">
+    <div class="logo">     ██╗███████╗██╗  ██╗██╗██╗     ██╗     ███████╗
+     ██║██╔════╝██║ ██╔╝██║██║     ██║     ██╔════╝
+     ██║███████╗█████╔╝ ██║██║     ██║     ███████╗
+██   ██║╚════██║██╔═██╗ ██║██║     ██║     ╚════██║
+╚█████╔╝███████║██║  ██╗██║███████╗███████╗███████║
+ ╚════╝ ╚══════╝╚═╝  ╚═╝╚═╝╚══════╝╚══════╝╚══════╝</div>
+    <h1>The agent skills CLI for Java</h1>
+    <p>Install, manage, and discover skills for AI coding agents — no Node.js required.</p>
+  </section>
+
+  <section class="install">
+    <div class="install-card">
+      <h3>☕ via JBang (any OS with Java 25+)</h3>
+      <pre><span class="prompt">$ </span>curl -Ls https://sh.jbang.dev | bash -s - app setup   <span class="comment"># install JBang if needed</span>
+<span class="prompt">$ </span>jbang app install skills@maxandersen/jskills
+<span class="prompt">$ </span>skills find react</pre>
+    </div>
+    <div class="install-card">
+      <h3>⚡ Native binary (no JVM needed)</h3>
+      <pre><span class="comment"># Download from GitHub Releases for your platform:</span>
+<span class="comment"># skills-linux-amd64 · skills-macos-aarch64 · skills-windows-amd64.exe</span>
+<span class="prompt">$ </span>curl -Lo skills https://github.com/maxandersen/jskills/releases/latest/download/skills-macos-aarch64
+<span class="prompt">$ </span>chmod +x skills && sudo mv skills /usr/local/bin/</pre>
+      <p class="note">Native binaries are available on <a href="https://github.com/maxandersen/jskills/releases">tagged releases</a>.</p>
+    </div>
+  </section>
+
+  <section class="commands">
+    <h2>Commands</h2>
+    <div class="cmd-grid">
+      <div class="cmd">
+        <code>skills add &lt;source&gt;</code>
+        <p>Add skills from a GitHub repo or URL</p>
+      </div>
+      <div class="cmd">
+        <code>skills find [query]</code>
+        <p>Search the registry — interactive when no query</p>
+      </div>
+      <div class="cmd">
+        <code>skills list</code>
+        <p>List all installed skills</p>
+      </div>
+      <div class="cmd">
+        <code>skills remove [name]</code>
+        <p>Remove installed skills</p>
+      </div>
+      <div class="cmd">
+        <code>skills update [name]</code>
+        <p>Update skills to latest versions</p>
+      </div>
+      <div class="cmd">
+        <code>skills init &lt;name&gt;</code>
+        <p>Scaffold a new skill project</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="find">
+    <h2>Explore skills</h2>
+    <div class="search-box">
+      <span class="search-icon">⌕</span>
+      <input type="text" id="search" placeholder="Search skills…" autocomplete="off">
+    </div>
+    <div class="result-count" id="count"></div>
+    <div class="results" id="results">
+      <div class="loading"><span class="spinner"></span> Loading skills registry…</div>
+    </div>
+  </section>
+</div>
+
+<footer>
+  <p>
+    <a href="https://github.com/maxandersen/jskills">GitHub</a> ·
+    <a href="https://github.com/maxandersen/jskills/releases">Releases</a> ·
+    Built on the <a href="https://github.com/vercel-labs/skills">open agent skills ecosystem</a>
+  </p>
+</footer>
+
+<script>
+(function() {
+  const searchInput = document.getElementById('search');
+  const resultsDiv = document.getElementById('results');
+  const countDiv = document.getElementById('count');
+  const API = 'https://skills.sh/api/search';
+
+  function formatNum(n) {
+    if (n >= 1000) return (n/1000).toFixed(1).replace(/\.0$/, '') + 'k';
+    return n.toString();
+  }
+
+  function render(skills) {
+    if (!skills.length) {
+      resultsDiv.innerHTML = '<div class="loading">No skills found</div>';
+      countDiv.textContent = '0 skills';
+      return;
+    }
+    countDiv.textContent = skills.length + ' skill' + (skills.length !== 1 ? 's' : '');
+    const addCmd = s => `skills add ${s.source}` + (s.source.includes('@') ? '' : `@${s.skillId || s.name}`);
+    resultsDiv.innerHTML = skills.slice(0, 100).map(s => `
+      <div class="skill-row" title="${esc(addCmd(s))}">
+        <div>
+          <div class="skill-name">${esc(s.name)}</div>
+          <div class="skill-source">${esc(s.source)}</div>
+        </div>
+        <div class="skill-installs">${formatNum(s.installs)} installs</div>
+      </div>
+    `).join('');
+    if (skills.length > 100) {
+      resultsDiv.innerHTML += `<div class="loading" style="padding:0.75rem">Showing top 100 of ${skills.length}</div>`;
+    }
+  }
+
+  function esc(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  let controller;
+  function search(q) {
+    if (controller) controller.abort();
+    if (!q || q.length < 2) {
+      resultsDiv.innerHTML = '<div class="loading">Type at least 2 characters to search</div>';
+      countDiv.textContent = '';
+      return;
+    }
+    controller = new AbortController();
+    resultsDiv.innerHTML = '<div class="loading"><span class="spinner"></span> Searching…</div>';
+    fetch(API + '?q=' + encodeURIComponent(q), { signal: controller.signal })
+      .then(r => r.json())
+      .then(data => {
+        const skills = (data.skills || []).sort((a,b) => b.installs - a.installs);
+        render(skills);
+      })
+      .catch(e => {
+        if (e.name === 'AbortError') return;
+        resultsDiv.innerHTML = '<div class="loading">Search failed. <a href="https://github.com/maxandersen/jskills">Try the CLI instead.</a></div>';
+      });
+  }
+
+  let debounce;
+  searchInput.addEventListener('input', () => {
+    clearTimeout(debounce);
+    debounce = setTimeout(() => search(searchInput.value.trim()), 250);
+  });
+
+  // Load popular skills on start
+  fetch(API + '?q=skills')
+    .then(r => r.json())
+    .then(data => render((data.skills || []).sort((a,b) => b.installs - a.installs)))
+    .catch(() => {
+      resultsDiv.innerHTML = '<div class="loading">Type a query to search the skills registry</div>';
+    });
+})();
+</script>
+
+</body>
+</html>
