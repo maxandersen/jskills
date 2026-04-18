@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FAQ — jskills</title>
+  <meta name="description" content="Frequently asked questions about jskills, the Java CLI for the open agent skills ecosystem.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --fg: #e5e5e5;
+      --dim: #737373;
+      --accent: #22c55e;
+      --card-bg: #171717;
+      --card-border: #262626;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code {
+      font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+      background: var(--bg);
+      padding: 0.15rem 0.4rem;
+      border-radius: 3px;
+      font-size: 0.85em;
+    }
+    .container { max-width: 900px; margin: 0 auto; padding: 0 1.5rem; }
+
+    /* Nav */
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--card-border);
+    }
+    nav .nav-brand { font-weight: 600; font-size: 0.95rem; color: var(--fg); text-decoration: none; }
+    nav .nav-brand:hover { text-decoration: none; }
+    nav .nav-links { display: flex; gap: 1.5rem; font-size: 0.85rem; }
+    nav .nav-links a { color: var(--dim); }
+    nav .nav-links a:hover { color: var(--fg); text-decoration: none; }
+
+    /* Page header */
+    .page-header {
+      padding: 3rem 0 2rem;
+    }
+    .page-header h1 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+    .page-header p { color: var(--dim); font-size: 0.95rem; }
+
+    /* FAQ */
+    .faq-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 3rem;
+    }
+    .faq-list details {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+    }
+    .faq-list summary {
+      padding: 0.85rem 1.25rem;
+      cursor: pointer;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--fg);
+      list-style: none;
+    }
+    .faq-list summary::-webkit-details-marker { display: none; }
+    .faq-list summary::before {
+      content: '▸ ';
+      color: var(--dim);
+      margin-right: 0.25rem;
+    }
+    .faq-list details[open] summary::before { content: '▾ '; }
+    .faq-list details[open] summary { border-bottom: 1px solid var(--card-border); }
+    .faq-list details p {
+      padding: 0.85rem 1.25rem;
+      font-size: 0.9rem;
+      color: var(--dim);
+      line-height: 1.7;
+    }
+    .faq-list details p a { color: var(--accent); }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--card-border);
+      padding: 2rem 0;
+      text-align: center;
+      color: var(--dim);
+      font-size: 0.8rem;
+      margin-top: 2rem;
+    }
+    footer a { color: var(--dim); }
+    footer a:hover { color: var(--fg); }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <nav>
+    <a class="nav-brand" href="./">jskills</a>
+    <div class="nav-links">
+      <a href="./#install">Install</a>
+      <a href="./#commands">Docs</a>
+      <a href="faq.html">FAQ</a>
+      <a href="https://github.com/maxandersen/jskills" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </nav>
+
+  <section class="page-header">
+    <h1>Frequently Asked Questions</h1>
+    <p>Everything you need to know about jskills.</p>
+  </section>
+
+  <div class="faq-list">
+    <details open>
+      <summary>How is this different from skills.sh?</summary>
+      <p>jskills is a friendly Java port of the <a href="https://github.com/vercel-labs/skills">vercel-labs/skills</a> CLI. It uses the same registry, installs the same skills, and produces the same lock files. The difference is it runs on Java 25+ (via <a href="https://jbang.dev">JBang</a>) or as a standalone native binary — no Node.js or npm required.</p>
+    </details>
+    <details>
+      <summary>Are the skills compatible?</summary>
+      <p>Yes, fully. Skills are agent-agnostic Markdown files hosted on GitHub. jskills reads and writes the same <code>skills.lock</code> format as the original CLI. You can switch between them freely — they're interchangeable.</p>
+    </details>
+    <details>
+      <summary>Which agents are supported?</summary>
+      <p>Claude Code, Codex, Gemini CLI, Copilot, Amp, and any agent that reads skill directories. Use <code>skills add &lt;source&gt; --agent &lt;name&gt;</code> to target a specific agent. Without <code>--agent</code>, skills are installed for the default agent detected in your project.</p>
+    </details>
+    <details>
+      <summary>Do I need Java installed?</summary>
+      <p>For the JBang install — yes, Java 25+. JBang can manage this for you automatically. For native binaries (Linux, macOS, Windows), no — they are self-contained executables with zero runtime dependencies.</p>
+    </details>
+    <details>
+      <summary>Where are skills stored?</summary>
+      <p>Project-scoped skills go in the agent's skill directory (e.g. <code>.claude/skills/</code>, <code>.codex/skills/</code>) in your project root. Global skills go in <code>~/.claude/skills/</code> (or equivalent). The lock file <code>skills.lock</code> tracks sources and versions.</p>
+    </details>
+    <details>
+      <summary>Can I use both jskills and the original skills CLI?</summary>
+      <p>Yes. They share the same lock file format and directory structure. You can install skills with one CLI and manage them with the other. The registry, sources, and skill format are identical.</p>
+    </details>
+    <details>
+      <summary>How do I update skills?</summary>
+      <p>Run <code>skills update</code> to update all installed skills, or <code>skills update &lt;name&gt;</code> for a specific one. Use <code>skills update -g</code> to update only global skills.</p>
+    </details>
+    <details>
+      <summary>How fast is the native binary?</summary>
+      <p>The native binary starts in ~10ms with no JVM warmup. It's a GraalVM native image — a single executable file around 58MB that includes everything needed to run.</p>
+    </details>
+  </div>
+</div>
+
+<footer>
+  <p>
+    <a href="https://github.com/maxandersen/jskills">GitHub</a> ·
+    <a href="https://github.com/maxandersen/jskills/releases">Releases</a> ·
+    Built on the <a href="https://github.com/vercel-labs/skills">open agent skills ecosystem</a>
+  </p>
+</footer>
+
+</body>
+</html>
