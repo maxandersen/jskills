@@ -75,16 +75,61 @@
       color: var(--dim);
       margin-bottom: 0.75rem;
     }
-    .install-card pre {
+    .install-card .note { font-size: 0.8rem; color: var(--dim); margin-top: 0.5rem; }
+
+    /* Copyable code block */
+    .code-block {
       background: var(--bg);
-      padding: 0.75rem 1rem;
       border-radius: 6px;
       overflow-x: auto;
+      position: relative;
+    }
+    .code-block pre {
+      padding: 0.75rem 3rem 0.75rem 1rem;
+      margin: 0;
       color: var(--fg);
     }
-    .install-card pre .prompt { color: var(--dim); user-select: none; }
-    .install-card pre .comment { color: var(--dim); }
-    .install-card .note { font-size: 0.8rem; color: var(--dim); margin-top: 0.5rem; }
+    .code-block .prompt { color: var(--dim); user-select: none; }
+    .code-block .comment { color: var(--dim); }
+    .copy-btn {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 4px;
+      color: var(--dim);
+      cursor: pointer;
+      padding: 0.25rem 0.4rem;
+      font-size: 0.75rem;
+      line-height: 1;
+      transition: all 0.15s;
+    }
+    .copy-btn:hover { color: var(--fg); border-color: #404040; }
+    .copy-btn.copied { color: var(--accent); border-color: var(--accent); }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--card-border);
+      margin-bottom: 0;
+    }
+    .tab {
+      padding: 0.4rem 1rem;
+      background: none;
+      border: none;
+      color: var(--dim);
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-family: inherit;
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    .tab:hover { color: var(--fg); }
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
 
     /* Commands */
     .commands {
@@ -185,16 +230,44 @@
   <section class="install">
     <div class="install-card">
       <h3>☕ via JBang (any OS with Java 25+)</h3>
-      <pre><span class="prompt">$ </span>curl -Ls https://sh.jbang.dev | bash -s - app setup   <span class="comment"># install JBang if needed</span>
-<span class="prompt">$ </span>jbang app install skills@maxandersen/jskills
-<span class="prompt">$ </span>skills find react</pre>
+      <div class="code-block">
+        <button class="copy-btn" data-copy="curl -Ls https://sh.jbang.dev | bash -s - app setup" title="Copy">📋</button>
+        <pre><span class="prompt">$ </span>curl -Ls https://sh.jbang.dev | bash -s - app setup   <span class="comment"># install JBang if needed</span></pre>
+      </div>
+      <div class="code-block" style="margin-top: 0.5rem">
+        <button class="copy-btn" data-copy="jbang app install skills@maxandersen/jskills" title="Copy">📋</button>
+        <pre><span class="prompt">$ </span>jbang app install skills@maxandersen/jskills</pre>
+      </div>
     </div>
+
     <div class="install-card">
       <h3>⚡ Native binary (no JVM needed)</h3>
-      <pre><span class="comment"># Download from GitHub Releases for your platform:</span>
-<span class="comment"># skills-linux-amd64 · skills-macos-aarch64 · skills-windows-amd64.exe</span>
-<span class="prompt">$ </span>curl -Lo skills https://github.com/maxandersen/jskills/releases/latest/download/skills-macos-aarch64
+      <div class="tabs" data-tab-group="os">
+        <button class="tab active" data-tab="macos">macOS</button>
+        <button class="tab" data-tab="linux">Linux</button>
+        <button class="tab" data-tab="windows">Windows</button>
+      </div>
+      <div class="tab-content active" data-tab-panel="macos">
+        <div class="code-block" style="margin-top: 0.75rem">
+          <button class="copy-btn" data-copy="curl -Lo skills https://github.com/maxandersen/jskills/releases/latest/download/skills-macos-aarch64 && chmod +x skills && sudo mv skills /usr/local/bin/" title="Copy">📋</button>
+          <pre><span class="prompt">$ </span>curl -Lo skills https://github.com/maxandersen/jskills/releases/latest/download/skills-macos-aarch64
 <span class="prompt">$ </span>chmod +x skills && sudo mv skills /usr/local/bin/</pre>
+        </div>
+      </div>
+      <div class="tab-content" data-tab-panel="linux">
+        <div class="code-block" style="margin-top: 0.75rem">
+          <button class="copy-btn" data-copy="curl -Lo skills https://github.com/maxandersen/jskills/releases/latest/download/skills-linux-amd64 && chmod +x skills && sudo mv skills /usr/local/bin/" title="Copy">📋</button>
+          <pre><span class="prompt">$ </span>curl -Lo skills https://github.com/maxandersen/jskills/releases/latest/download/skills-linux-amd64
+<span class="prompt">$ </span>chmod +x skills && sudo mv skills /usr/local/bin/</pre>
+        </div>
+      </div>
+      <div class="tab-content" data-tab-panel="windows">
+        <div class="code-block" style="margin-top: 0.75rem">
+          <button class="copy-btn" data-copy="curl -Lo skills.exe https://github.com/maxandersen/jskills/releases/latest/download/skills-windows-amd64.exe" title="Copy">📋</button>
+          <pre><span class="prompt">&gt; </span>curl -Lo skills.exe https://github.com/maxandersen/jskills/releases/latest/download/skills-windows-amd64.exe</pre>
+        </div>
+        <p class="note">Add the download location to your <code>PATH</code>.</p>
+      </div>
       <p class="note">Native binaries are available on <a href="https://github.com/maxandersen/jskills/releases">tagged releases</a>.</p>
     </div>
   </section>
@@ -252,6 +325,44 @@
     Built on the <a href="https://github.com/vercel-labs/skills">open agent skills ecosystem</a>
   </p>
 </footer>
+
+<script>
+// OS tabs
+document.querySelectorAll('.tabs').forEach(tabBar => {
+  tabBar.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const group = tabBar.closest('.install-card');
+      group.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      group.querySelectorAll('.tab-content').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      group.querySelector(`[data-tab-panel="${tab.dataset.tab}"]`).classList.add('active');
+    });
+  });
+});
+
+// Auto-detect OS and select matching tab
+(function() {
+  const ua = navigator.userAgent.toLowerCase();
+  let os = 'macos';
+  if (ua.includes('win')) os = 'windows';
+  else if (ua.includes('linux')) os = 'linux';
+  document.querySelectorAll('.install-card').forEach(card => {
+    const tab = card.querySelector(`.tab[data-tab="${os}"]`);
+    if (tab) tab.click();
+  });
+})();
+
+// Copy buttons
+document.querySelectorAll('.copy-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    navigator.clipboard.writeText(btn.dataset.copy).then(() => {
+      btn.textContent = '✓';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = '📋'; btn.classList.remove('copied'); }, 1500);
+    });
+  });
+});
+</script>
 
 </body>
 </html>
