@@ -16,8 +16,8 @@ skills add vercel-labs/agent-skills
 skills list
 ```
 
-> Don't have JBang? Install it from [jbang.dev/download](https://www.jbang.dev/download/).
-> Or run without installing: `jbang skills@maxandersen/jskills <command>`
+> Don't have JBang? Install it with `curl -Ls https://sh.jbang.dev | bash -s - app setup`
+> or see [jbang.dev/download](https://www.jbang.dev/download/) for other options.
 
 ## Usage
 
