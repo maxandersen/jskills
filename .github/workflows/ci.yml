@@ -118,7 +118,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set version
-        run: mvn --no-transfer-progress versions:set -DnewVersion=0.0.0-SNAPSHOT
+        run: mvn --no-transfer-progress versions:set "-DnewVersion=0.0.0-SNAPSHOT"
 
       - name: Build native image
         run: mvn --no-transfer-progress package -Dnative -DskipTests

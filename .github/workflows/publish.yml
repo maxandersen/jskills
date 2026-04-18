@@ -102,7 +102,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set Maven version
-        run: mvn --no-transfer-progress versions:set -DnewVersion=${{ needs.release-jar.outputs.version }}
+        run: mvn --no-transfer-progress versions:set "-DnewVersion=${{ needs.release-jar.outputs.version }}"
 
       - name: Build native image
         run: mvn --no-transfer-progress package -Dnative -DskipTests
