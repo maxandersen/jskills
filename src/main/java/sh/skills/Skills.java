@@ -65,7 +65,7 @@ public class Skills implements Callable<Integer> {
         // No subcommand: show banner + usage hints (matching upstream showBanner)
         Console.showLogo();
         Console.log("");
-        Console.log(Console.dim("The open agent skills ecosystem (ported to Java)"));
+        Console.log(Console.dim("The open agent skills ecosystem"));
         Console.log("");
         bannerLine("skills add " + Console.dim("<package>"), "Add a new skill");
         bannerLine("skills remove",                          "Remove installed skills");
