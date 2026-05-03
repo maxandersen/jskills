@@ -11,6 +11,10 @@ on:
         required: false
         default: 'false'
 
+permissions:
+  contents: write
+  issues: write
+
 jobs:
   check-upstream:
     name: Check vercel-labs/skills for updates
