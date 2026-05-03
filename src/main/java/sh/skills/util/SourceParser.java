@@ -43,7 +43,7 @@ public class SourceParser {
     private static final Pattern GITLAB_REPO = Pattern.compile(
         "gitlab\\.com/(.+?)(?:\\.git)?/?$");
     private static final Pattern GHE_PREFIX = Pattern.compile(
-        "^ghe:([^/]+)/([^/]+)/([^/]+)(?:/tree/([^/]+)(?:/(.+))?)?$");
+        "^ghe:([^/]+)/([a-zA-Z0-9][^/]*)/([a-zA-Z0-9][^/]*)(?:/tree/([^/]+)(?:/(.+))?)?$");
     private static final Pattern GHE_HTTPS = Pattern.compile(
         "^https?://([^/]+)/([a-zA-Z0-9][^/]*)/([a-zA-Z0-9][^/]*)(?:/tree/([^/]+)(?:/(.+))?)?$");
     private static final Pattern AT_SKILL = Pattern.compile(

@@ -21,8 +21,9 @@ import java.util.regex.Pattern;
 public class GitHubEnterpriseProvider implements HostProvider {
 
     // Matches ghe:hostname/owner/repo[/tree/branch[/path]]
+    // owner and repo must start with alphanumeric to match GitHub naming rules
     private static final Pattern GHE_PREFIX = Pattern.compile(
-        "^ghe:([^/]+)/([a-zA-Z0-9_.-]+)/([a-zA-Z0-9_.-]+)(?:/tree/([^/]+)(?:/(.+))?)?$"
+        "^ghe:([^/]+)/([a-zA-Z0-9][a-zA-Z0-9_.-]*)/([a-zA-Z0-9][a-zA-Z0-9_.-]*)(?:/tree/([^/]+)(?:/(.+))?)?$"
     );
 
     // Matches https://hostname/owner/repo[/tree/branch[/path]]
